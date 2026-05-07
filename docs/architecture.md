@@ -1,6 +1,6 @@
 # Architecture
 
-Automation Debugger is the repair/debug spoke in the Workflow Automation Portfolio portfolio. It stays thin: shared runtime conventions belong in Automation Kit, working green-path integration proof belongs in api-webhook-bridge, and this repo focuses on failed events.
+Automation Debugger is the repair/debug spoke in the Workflow Automation Portfolio. It stays thin: shared runtime conventions belong in Automation Kit, working green-path integration proof belongs in api-webhook-bridge, and this repo focuses on failed events.
 
 ## Layers
 
