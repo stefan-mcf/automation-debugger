@@ -1,0 +1,11 @@
+{
+  "created_at": "2026-05-06",
+  "event_id": "evt-missing-001",
+  "fixture_safe": true,
+  "idempotency_key": "missing-001",
+  "live_services_used": false,
+  "platform": "generic_webhook",
+  "synthetic_data_only": true,
+  "type": "lead.created",
+  "workflow_name": "Synthetic Missing Email"
+}

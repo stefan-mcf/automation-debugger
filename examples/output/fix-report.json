@@ -1,0 +1,71 @@
+{
+  "fixture_safe": true,
+  "live_services_used": false,
+  "synthetic_data_only": true,
+  "trace_id": "trace-125f687e66",
+  "title": "Fixture-Safe Automation Fix Report",
+  "executive_summary": "Synthetic generic_webhook fixture diagnosed as malformed_date; replay status: passed.",
+  "diagnosis": {
+    "fixture_safe": true,
+    "live_services_used": false,
+    "synthetic_data_only": true,
+    "trace_id": "trace-125f687e66",
+    "workflow_name": "Synthetic Automation Debug Session",
+    "platform_hint": "generic_webhook",
+    "event_id": "evt-report",
+    "failure_class": "malformed_date",
+    "severity": "medium",
+    "likely_failure_step": "field_mapping",
+    "diagnosis_summary": "Payload date format is malformed for the destination mapping.",
+    "safe_to_retry": true,
+    "manual_review_required": false,
+    "broken_fields": [
+      "created_at"
+    ],
+    "correction_suggestions": [
+      "Normalize date to ISO-8601 YYYY-MM-DD before replay."
+    ],
+    "corrected_payload": {
+      "event_id": "evt-report",
+      "type": "lead.created",
+      "email": "x@example.test",
+      "created_at": "2026-05-06",
+      "platform_hint": "generic_webhook",
+      "synthetic_data_only": true
+    },
+    "replay_result": null,
+    "handoff_notes": "Normalize date formatting before one local mock replay.",
+    "evidence": [
+      {
+        "step": "formatter",
+        "message": "Date field required normalization.",
+        "fields": [],
+        "snippet": {}
+      }
+    ]
+  },
+  "replay_result": {
+    "fixture_safe": true,
+    "live_services_used": false,
+    "synthetic_data_only": true,
+    "trace_id": "trace-125f687e66",
+    "status": "passed",
+    "destination": "mock-crm",
+    "reason": "Local mock replay accepted corrected payload; no live services used.",
+    "retry_count": 0,
+    "dead_letter_path": null,
+    "operation_count": 1
+  },
+  "prevention_notes": [
+    "Require an idempotency key before replaying failed events.",
+    "Verify webhook signatures against the raw request body.",
+    "Use retry/backoff and circuit-breaker rules for transient downstream failures.",
+    "Store dead-letter records locally before transformation for auditability.",
+    "Route unknown event types to manual review instead of guessing."
+  ],
+  "next_live_service_steps_requiring_approval": [
+    "Approve credential scope before any live external-service test.",
+    "Approve one sanitized customer sample before client-specific replay.",
+    "Approve public sharing before linking this repo externally."
+  ]
+}

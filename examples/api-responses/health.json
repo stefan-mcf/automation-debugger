@@ -1,0 +1,14 @@
+{
+  "backbone": {
+    "automation_kit_available": false,
+    "fixture_safe": true,
+    "live_services_used": false,
+    "mock_crm_available": false,
+    "mock_slack_available": false,
+    "synthetic_data_only": true
+  },
+  "fixture_safe": true,
+  "live_services_used": false,
+  "status": "ok",
+  "synthetic_data_only": true
+}

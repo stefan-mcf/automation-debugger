@@ -1,0 +1,12 @@
+{
+  "fixture_safe": true,
+  "live_services_used": false,
+  "synthetic_data_only": true,
+  "platforms": {
+    "generic_webhook": {"payload_path": "$", "event_id": "event_id"},
+    "api_webhook_bridge": {"payload_path": "$", "event_id": "event_id"},
+    "zapier": {"payload_path": "task_history.input_data", "event_id": "task_history.task_id"},
+    "make": {"payload_path": "incomplete_execution.bundle", "event_id": "incomplete_execution.execution_id"},
+    "n8n": {"payload_path": "execution.data", "event_id": "execution.id"}
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "fixture_safe": true,
+  "live_services_used": false,
+  "synthetic_data_only": true,
+  "failure_classes": {
+    "missing_required_field": {"severity": "high", "safe_to_retry": false, "manual_review_required": true},
+    "malformed_date": {"severity": "medium", "safe_to_retry": true, "manual_review_required": false},
+    "duplicate_event": {"severity": "medium", "safe_to_retry": false, "manual_review_required": false},
+    "destination_mismatch": {"severity": "medium", "safe_to_retry": true, "manual_review_required": false},
+    "unknown_event_type": {"severity": "medium", "safe_to_retry": false, "manual_review_required": true},
+    "invalid_webhook_signature": {"severity": "high", "safe_to_retry": false, "manual_review_required": true},
+    "downstream_500_loop": {"severity": "high", "safe_to_retry": false, "manual_review_required": true},
+    "rate_limit_backoff_needed": {"severity": "medium", "safe_to_retry": false, "manual_review_required": false}
+  }
+}

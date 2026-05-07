@@ -1,0 +1,12 @@
+{
+  "created_at": "2026-05-06",
+  "email": "unknown@example.test",
+  "event_id": "evt-unknown-001",
+  "fixture_safe": true,
+  "idempotency_key": "unknown-001",
+  "live_services_used": false,
+  "platform": "generic_webhook",
+  "synthetic_data_only": true,
+  "type": "invoice.deleted",
+  "workflow_name": "Synthetic Unknown Event"
+}

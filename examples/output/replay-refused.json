@@ -1,0 +1,12 @@
+{
+  "fixture_safe": true,
+  "live_services_used": false,
+  "synthetic_data_only": true,
+  "trace_id": "trace-927e343f5a",
+  "status": "blocked",
+  "destination": "local-mock-destination",
+  "reason": "Webhook signature validation failed; replay is refused.",
+  "retry_count": 0,
+  "dead_letter_path": null,
+  "operation_count": 0
+}

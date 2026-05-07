@@ -1,0 +1,45 @@
+{
+  "fixture_safe": true,
+  "live_services_used": false,
+  "synthetic_data_only": true,
+  "trace_id": "trace-4896ad7a12",
+  "workflow_name": "Synthetic Destination Router",
+  "platform_hint": "api_webhook_bridge",
+  "event_id": "evt-destination-001",
+  "failure_class": "destination_mismatch",
+  "severity": "medium",
+  "likely_failure_step": "routing",
+  "diagnosis_summary": "Destination mismatch would route data to the wrong integration target.",
+  "safe_to_retry": true,
+  "manual_review_required": false,
+  "broken_fields": [
+    "destination"
+  ],
+  "correction_suggestions": [
+    "Map legacy destination to approved local mock CRM route."
+  ],
+  "corrected_payload": {
+    "created_at": "2026-05-06",
+    "destination": "mock-crm",
+    "email": "route@example.test",
+    "event_id": "evt-destination-001",
+    "fixture_safe": true,
+    "idempotency_key": "dest-001",
+    "live_services_used": false,
+    "platform": "api_webhook_bridge",
+    "synthetic_data_only": true,
+    "type": "contact.created",
+    "workflow_name": "Synthetic Destination Router",
+    "platform_hint": "api_webhook_bridge"
+  },
+  "replay_result": null,
+  "handoff_notes": "Update destination mapping and replay one approved synthetic sample.",
+  "evidence": [
+    {
+      "step": "routing",
+      "message": "Destination mismatch corrected locally.",
+      "fields": [],
+      "snippet": {}
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "automation-debugger",
+  "title": "Automation Debugger",
+  "description": "Fixture-safe broken automation diagnosis, correction, replay, and fix-report proof for Zapier, Make, n8n, webhook, and API bridge failure scenarios.",
+  "private": true,
+  "fixture_safe": true,
+  "live_services_used": false,
+  "synthetic_data_only": true,
+  "topics": [
+    "zapier",
+    "make",
+    "n8n",
+    "webhooks",
+    "workflow-automation",
+    "automation-debugging",
+    "automation-repair",
+    "fixture-safe"
+  ],
+  "automation_kit_relationship": "Concrete repair/debug companion proof repo; Automation Kit remains the reusable local proof framework.",
+  "api_webhook_bridge_relationship": "Sibling green-path integration spoke; this repo consumes failed/dead-letter-style fixture handoffs without importing bridge internals."
+}

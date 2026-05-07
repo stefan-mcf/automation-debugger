@@ -1,0 +1,42 @@
+{
+  "fixture_safe": true,
+  "live_services_used": false,
+  "synthetic_data_only": true,
+  "trace_id": "trace-4244e6c1a5",
+  "workflow_name": "Synthetic n8n Notification Workflow",
+  "platform_hint": "n8n",
+  "event_id": "n8n-exec-001",
+  "failure_class": "invalid_webhook_signature",
+  "severity": "high",
+  "likely_failure_step": "webhook_auth",
+  "diagnosis_summary": "Webhook signature validation failed; replay is refused.",
+  "safe_to_retry": false,
+  "manual_review_required": true,
+  "broken_fields": [
+    "signature"
+  ],
+  "correction_suggestions": [],
+  "corrected_payload": {
+    "created_at": "2026-05-06",
+    "email": "n8n@example.test",
+    "idempotency_key": "n8n-001",
+    "signature_valid": false,
+    "type": "lead.created",
+    "platform_hint": "n8n",
+    "workflow_name": "Synthetic n8n Notification Workflow",
+    "event_id": "n8n-exec-001",
+    "failure_reason": "invalid signature",
+    "failed_step": "Webhook Validate",
+    "synthetic_data_only": true
+  },
+  "replay_result": null,
+  "handoff_notes": "Verify HMAC secret and captured raw body before any live retry.",
+  "evidence": [
+    {
+      "step": "webhook_auth",
+      "message": "Invalid fixture HMAC signature.",
+      "fields": [],
+      "snippet": {}
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "created_at": "2026-05-06",
+  "email": "rate@example.test",
+  "event_id": "evt-rate-001",
+  "failure_reason": "rate limit from downstream mock destination",
+  "fixture_safe": true,
+  "idempotency_key": "rate-001",
+  "live_services_used": false,
+  "platform": "generic_webhook",
+  "retry_count": 1,
+  "status_code": 429,
+  "synthetic_data_only": true,
+  "type": "lead.created",
+  "workflow_name": "Synthetic Rate Limit Backoff"
+}

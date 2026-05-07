@@ -1,0 +1,13 @@
+{
+  "created_at": "2026-05-06",
+  "email": "sig@example.test",
+  "event_id": "evt-signature-001",
+  "fixture_safe": true,
+  "idempotency_key": "sig-001",
+  "live_services_used": false,
+  "platform": "generic_webhook",
+  "signature_valid": false,
+  "synthetic_data_only": true,
+  "type": "lead.created",
+  "workflow_name": "Synthetic Webhook Auth"
+}

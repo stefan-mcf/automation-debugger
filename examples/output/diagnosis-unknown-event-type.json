@@ -1,0 +1,40 @@
+{
+  "fixture_safe": true,
+  "live_services_used": false,
+  "synthetic_data_only": true,
+  "trace_id": "trace-901c20d8ad",
+  "workflow_name": "Synthetic Unknown Event",
+  "platform_hint": "generic_webhook",
+  "event_id": "evt-unknown-001",
+  "failure_class": "unknown_event_type",
+  "severity": "medium",
+  "likely_failure_step": "event_router",
+  "diagnosis_summary": "Unknown event type requires manual routing review.",
+  "safe_to_retry": false,
+  "manual_review_required": true,
+  "broken_fields": [],
+  "correction_suggestions": [],
+  "corrected_payload": {
+    "created_at": "2026-05-06",
+    "email": "unknown@example.test",
+    "event_id": "evt-unknown-001",
+    "fixture_safe": true,
+    "idempotency_key": "unknown-001",
+    "live_services_used": false,
+    "platform": "generic_webhook",
+    "synthetic_data_only": true,
+    "type": "invoice.deleted",
+    "workflow_name": "Synthetic Unknown Event",
+    "platform_hint": "generic_webhook"
+  },
+  "replay_result": null,
+  "handoff_notes": "Add an approved routing branch before retrying.",
+  "evidence": [
+    {
+      "step": "event_router",
+      "message": "Unknown event type: invoice.deleted",
+      "fields": [],
+      "snippet": {}
+    }
+  ]
+}

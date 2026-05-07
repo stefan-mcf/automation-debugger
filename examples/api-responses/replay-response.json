@@ -1,0 +1,12 @@
+{
+  "dead_letter_path": null,
+  "destination": "mock-crm",
+  "fixture_safe": true,
+  "live_services_used": false,
+  "operation_count": 1,
+  "reason": "Local mock replay accepted corrected payload; no live services used.",
+  "retry_count": 0,
+  "status": "passed",
+  "synthetic_data_only": true,
+  "trace_id": "trace-d811635471"
+}

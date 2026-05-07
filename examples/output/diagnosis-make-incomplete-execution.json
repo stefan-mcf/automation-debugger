@@ -1,0 +1,44 @@
+{
+  "fixture_safe": true,
+  "live_services_used": false,
+  "synthetic_data_only": true,
+  "trace_id": "trace-74ccfb8fdf",
+  "workflow_name": "Synthetic Make CRM Scenario",
+  "platform_hint": "make",
+  "event_id": "make-exec-001",
+  "failure_class": "destination_mismatch",
+  "severity": "medium",
+  "likely_failure_step": "routing",
+  "diagnosis_summary": "Destination mismatch would route data to the wrong integration target.",
+  "safe_to_retry": true,
+  "manual_review_required": false,
+  "broken_fields": [
+    "destination"
+  ],
+  "correction_suggestions": [
+    "Map legacy destination to approved local mock CRM route."
+  ],
+  "corrected_payload": {
+    "created_at": "2026-05-06",
+    "destination": "mock-crm",
+    "email": "make@example.test",
+    "idempotency_key": "make-001",
+    "type": "contact.created",
+    "platform_hint": "make",
+    "workflow_name": "Synthetic Make CRM Scenario",
+    "event_id": "make-exec-001",
+    "failure_reason": "Destination mismatch",
+    "failed_step": "Airtable Upsert",
+    "synthetic_data_only": true
+  },
+  "replay_result": null,
+  "handoff_notes": "Update destination mapping and replay one approved synthetic sample.",
+  "evidence": [
+    {
+      "step": "routing",
+      "message": "Destination mismatch corrected locally.",
+      "fields": [],
+      "snippet": {}
+    }
+  ]
+}

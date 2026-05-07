@@ -1,0 +1,18 @@
+{
+  "fixture_safe": true,
+  "live_services_used": false,
+  "platform": "zapier",
+  "synthetic_data_only": true,
+  "task_history": {
+    "error": "Date field format invalid",
+    "input_data": {
+      "created_at": "05/06/2026",
+      "email": "zapier@example.test",
+      "idempotency_key": "zap-001",
+      "type": "lead.created"
+    },
+    "step": "Formatter by Zapier",
+    "task_id": "zap_task_001"
+  },
+  "workflow_name": "Synthetic Zapier Lead Router"
+}

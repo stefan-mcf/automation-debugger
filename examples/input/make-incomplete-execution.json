@@ -1,0 +1,19 @@
+{
+  "fixture_safe": true,
+  "incomplete_execution": {
+    "bundle": {
+      "created_at": "2026-05-06",
+      "destination": "legacy-crm",
+      "email": "make@example.test",
+      "idempotency_key": "make-001",
+      "type": "contact.created"
+    },
+    "error": "Destination mismatch",
+    "execution_id": "make-exec-001",
+    "module": "Airtable Upsert"
+  },
+  "live_services_used": false,
+  "platform": "make",
+  "synthetic_data_only": true,
+  "workflow_name": "Synthetic Make CRM Scenario"
+}

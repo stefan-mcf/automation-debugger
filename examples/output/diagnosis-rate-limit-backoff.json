@@ -1,0 +1,43 @@
+{
+  "fixture_safe": true,
+  "live_services_used": false,
+  "synthetic_data_only": true,
+  "trace_id": "trace-38f999227f",
+  "workflow_name": "Synthetic Rate Limit Backoff",
+  "platform_hint": "generic_webhook",
+  "event_id": "evt-rate-001",
+  "failure_class": "rate_limit_backoff_needed",
+  "severity": "medium",
+  "likely_failure_step": "retry_policy",
+  "diagnosis_summary": "Rate limit detected; retry only with exponential backoff and jitter.",
+  "safe_to_retry": false,
+  "manual_review_required": false,
+  "broken_fields": [],
+  "correction_suggestions": [],
+  "corrected_payload": {
+    "created_at": "2026-05-06",
+    "email": "rate@example.test",
+    "event_id": "evt-rate-001",
+    "failure_reason": "rate limit from downstream mock destination",
+    "fixture_safe": true,
+    "idempotency_key": "rate-001",
+    "live_services_used": false,
+    "platform": "generic_webhook",
+    "retry_count": 1,
+    "status_code": 429,
+    "synthetic_data_only": true,
+    "type": "lead.created",
+    "workflow_name": "Synthetic Rate Limit Backoff",
+    "platform_hint": "generic_webhook"
+  },
+  "replay_result": null,
+  "handoff_notes": "Apply backoff policy before approved replay.",
+  "evidence": [
+    {
+      "step": "retry_policy",
+      "message": "Rate limit/backoff condition detected.",
+      "fields": [],
+      "snippet": {}
+    }
+  ]
+}

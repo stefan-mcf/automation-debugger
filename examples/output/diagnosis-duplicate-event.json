@@ -1,0 +1,43 @@
+{
+  "fixture_safe": true,
+  "live_services_used": false,
+  "synthetic_data_only": true,
+  "trace_id": "trace-6520d0aaf6",
+  "workflow_name": "Synthetic Duplicate Guard",
+  "platform_hint": "generic_webhook",
+  "event_id": "duplicate-001",
+  "failure_class": "duplicate_event",
+  "severity": "medium",
+  "likely_failure_step": "dedupe_guard",
+  "diagnosis_summary": "Duplicate event/idempotency key detected before replay.",
+  "safe_to_retry": false,
+  "manual_review_required": false,
+  "broken_fields": [
+    "event_id"
+  ],
+  "correction_suggestions": [],
+  "corrected_payload": {
+    "created_at": "2026-05-06",
+    "duplicate": true,
+    "email": "dupe@example.test",
+    "event_id": "duplicate-001",
+    "fixture_safe": true,
+    "idempotency_key": "duplicate-key-001",
+    "live_services_used": false,
+    "platform": "generic_webhook",
+    "synthetic_data_only": true,
+    "type": "lead.created",
+    "workflow_name": "Synthetic Duplicate Guard",
+    "platform_hint": "generic_webhook"
+  },
+  "replay_result": null,
+  "handoff_notes": "Do not replay until idempotency state is checked.",
+  "evidence": [
+    {
+      "step": "dedupe_guard",
+      "message": "Duplicate idempotency key detected.",
+      "fields": [],
+      "snippet": {}
+    }
+  ]
+}

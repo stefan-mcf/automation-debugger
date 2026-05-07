@@ -1,0 +1,13 @@
+{
+  "created_at": "05/06/2026",
+  "destination": "mock-crm",
+  "email": "ALICE@EXAMPLE.COM ",
+  "event_id": "evt-broken-lead-001",
+  "fixture_safe": true,
+  "idempotency_key": "lead-001",
+  "live_services_used": false,
+  "platform": "generic_webhook",
+  "synthetic_data_only": true,
+  "type": "lead.created",
+  "workflow_name": "Synthetic CRM Lead Router"
+}

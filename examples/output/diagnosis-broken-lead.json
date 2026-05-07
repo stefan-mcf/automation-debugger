@@ -1,0 +1,46 @@
+{
+  "fixture_safe": true,
+  "live_services_used": false,
+  "synthetic_data_only": true,
+  "trace_id": "trace-b58ea9d9cd",
+  "workflow_name": "Synthetic CRM Lead Router",
+  "platform_hint": "generic_webhook",
+  "event_id": "evt-broken-lead-001",
+  "failure_class": "malformed_date",
+  "severity": "medium",
+  "likely_failure_step": "field_mapping",
+  "diagnosis_summary": "Payload date format is malformed for the destination mapping.",
+  "safe_to_retry": true,
+  "manual_review_required": false,
+  "broken_fields": [
+    "created_at"
+  ],
+  "correction_suggestions": [
+    "Trim and lowercase email before destination upsert.",
+    "Normalize date to ISO-8601 YYYY-MM-DD before replay."
+  ],
+  "corrected_payload": {
+    "created_at": "2026-05-06",
+    "destination": "mock-crm",
+    "email": "alice@example.com",
+    "event_id": "evt-broken-lead-001",
+    "fixture_safe": true,
+    "idempotency_key": "lead-001",
+    "live_services_used": false,
+    "platform": "generic_webhook",
+    "synthetic_data_only": true,
+    "type": "lead.created",
+    "workflow_name": "Synthetic CRM Lead Router",
+    "platform_hint": "generic_webhook"
+  },
+  "replay_result": null,
+  "handoff_notes": "Normalize date formatting before one local mock replay.",
+  "evidence": [
+    {
+      "step": "formatter",
+      "message": "Date field required normalization.",
+      "fields": [],
+      "snippet": {}
+    }
+  ]
+}
