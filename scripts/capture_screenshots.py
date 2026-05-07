@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import sys
 import textwrap
 from pathlib import Path
 
@@ -72,18 +73,6 @@ def wrap_lines(lines: list[str], width: int) -> list[str]:
     return wrapped
 
 
-def draw_badge(draw: ImageDraw.ImageDraw, xy: tuple[int, int], label: str, color: tuple[int, int, int]) -> int:
-    x, y = xy
-    pad_x = 14
-    pad_y = 8
-    bbox = draw.textbbox((0, 0), label, font=SMALL_FONT)
-    w = bbox[2] - bbox[0] + pad_x * 2
-    h = bbox[3] - bbox[1] + pad_y * 2
-    draw.rounded_rectangle((x, y, x + w, y + h), radius=14, fill=(20, 30, 48), outline=color, width=2)
-    draw.text((x + pad_x, y + pad_y - 1), label, font=SMALL_FONT, fill=color)
-    return x + w + 10
-
-
 def draw_panel(draw: ImageDraw.ImageDraw, box: tuple[int, int, int, int], title: str, lines: list[str], *, accent: tuple[int, int, int] = BLUE, code: bool = False) -> None:
     x1, y1, x2, y2 = box
     draw.rounded_rectangle(box, radius=22, fill=PANEL, outline=BORDER, width=2)
@@ -121,10 +110,6 @@ def render(path: Path, title: str, subtitle: str, panels: list[dict[str, object]
     draw.rounded_rectangle((30, 28, WIDTH - 30, 116), radius=24, fill=PANEL_2, outline=BORDER, width=2)
     draw.text((58, 48), title, font=TITLE_FONT, fill=TEXT)
     draw.text((60, 90), subtitle, font=SUBTITLE_FONT, fill=MUTED)
-    x = WIDTH - 520
-    for label, color in [("LOCAL", GREEN), ("SYNTHETIC", BLUE)]:
-        x = draw_badge(draw, (x, 56), label, color)
-
     for panel in panels:
         draw_panel(
             draw,
@@ -148,16 +133,17 @@ def render(path: Path, title: str, subtitle: str, panels: list[dict[str, object]
 
 
 def main() -> None:
+    py = sys.executable
     malformed = load_json("examples/input/malformed-date.json")
     mismatch = load_json("examples/input/destination-mismatch.json")
     duplicate = load_json("examples/input/duplicate-event.json")
 
-    cli_malformed = run(["python", "-m", "automation_debugger.cli", "inspect", "examples/input/malformed-date.json"], max_lines=18)
-    cli_mismatch = run(["python", "-m", "automation_debugger.cli", "inspect", "examples/input/destination-mismatch.json"], max_lines=18)
-    replay_ok = run(["python", "-m", "automation_debugger.cli", "replay", "examples/input/malformed-date.json"], max_lines=18)
-    replay_dup = run(["python", "-m", "automation_debugger.cli", "replay", "examples/input/duplicate-event.json"], max_lines=18)
-    pytest_lines = run(["python", "-m", "pytest", "-q", "tests", "-k", "not screenshots"], max_lines=10)
-    run(["python", "-m", "automation_debugger.cli", "report", "examples/input/malformed-date.json", "--format", "html", "--output", "examples/output/fix-report.html"], max_lines=5)
+    cli_malformed = run([py, "-m", "automation_debugger.cli", "inspect", "examples/input/malformed-date.json"], max_lines=18)
+    cli_mismatch = run([py, "-m", "automation_debugger.cli", "inspect", "examples/input/destination-mismatch.json"], max_lines=18)
+    replay_ok = run([py, "-m", "automation_debugger.cli", "replay", "examples/input/malformed-date.json"], max_lines=18)
+    replay_dup = run([py, "-m", "automation_debugger.cli", "replay", "examples/input/duplicate-event.json"], max_lines=18)
+    pytest_lines = run([py, "-m", "pytest", "-q", "tests", "-k", "not screenshots"], max_lines=10)
+    run([py, "-m", "automation_debugger.cli", "report", "examples/input/malformed-date.json", "--format", "html", "--output", "examples/output/fix-report.html"], max_lines=5)
     report_size = (ROOT / "examples/output/fix-report.html").stat().st_size
 
     render(
