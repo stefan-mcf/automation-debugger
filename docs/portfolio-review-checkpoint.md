@@ -1,16 +1,30 @@
 # Portfolio Review Checkpoint
 
-Automation Debugger has been prepared as a local, fixture-safe public proof candidate. Tranche 11 remains gated.
+Automation Debugger is public at <https://github.com/stefan-mcf/automation-debugger>.
 
-Approval source for any future external action must be recorded here before the action is executed.
+## Current public state
 
-Not yet approved:
+- Visibility: public.
+- Role: broken automation diagnosis, replay, and structured fix-report proof spoke.
+- CI workflow: `.github/workflows/ci.yml` added in the first-set reconciliation tranche.
+- Boundary: fixture_safe=true, live_services_used=false, synthetic_data_only=true.
 
-- pushing to GitHub;
-- changing repository visibility;
-- using live Zapier/Make/n8n/CRM/Google/Airtable/Slack/Discord/Stripe/webhook/cloud/LLM/OCR/payment services;
-- using real customer or client data;
+## Remaining approval gates
+
+Stop before:
+
+- release/tag creation;
+- live Zapier/Make/n8n/CRM/Google/Airtable/Slack/Discord/Stripe/webhook/cloud/LLM/OCR/payment services;
+- real customer or client data;
 - publishing release assets;
-- sharing generated client-facing reports without approval.
+- sending or sharing generated client-facing reports externally without approval.
 
-Boundary: fixture_safe=true, live_services_used=false, synthetic_data_only=true.
+## Verification bundle
+
+```bash
+PYTHONPATH=src python -m pytest -q
+python -m ruff check .
+python -m mypy src
+python scripts/verify_examples.py
+git diff --check
+```
