@@ -1,12 +1,34 @@
 # Automation Debugger
 
-Fixture-safe automation repair/debug proof for diagnosing failed Zapier, Make, n8n, webhook, and API-bridge-style workflow events before any live retry is attempted.
+A fixture-safe tool for diagnosing and repairing broken automation events — Zapier,
+Make, n8n, webhook, and API-bridge failures — before any live retry is attempted.
 
-It proves the failure path that complements [`api-webhook-bridge`](https://github.com/stefan-mcf/api-webhook-bridge): receive a broken automation payload, normalize the platform shape, classify the failure, decide whether a safe correction exists, refuse unsafe replay when needed, and generate evidence a reviewer can inspect.
+Automation Debugger takes a failed workflow event, normalizes it regardless of the
+source platform, classifies the failure, decides whether a safe correction exists,
+and either replays the corrected event against local mock destinations or dead-letters
+it with a clear reason. Every decision is traceable, every output is deterministic,
+and no live service is ever contacted by default.
 
-## What it diagnoses locally
+## What this is for
 
-This repo uses short, synthetic fixtures instead of live external-service exports. Each case writes a matching `examples/output/diagnosis-*.json` file, with visual proof in the evidence package below.
+Use Automation Debugger when you need to:
+
+- diagnose why a Zapier step, Make scenario, n8n execution, or webhook handler failed
+- normalize failure exports from different platforms into one inspectable shape
+- classify failures deterministically: malformed fields, missing data, duplicates,
+  destination mismatches, invalid signatures, rate limits, and downstream error loops
+- decide whether safe replay is possible or the event should be dead-lettered
+- generate fix reports (JSON, Markdown, HTML) for review before touching live systems
+- integrate a safe diagnosis/replay step into a broader automation pipeline via CLI or API
+
+Automation Debugger does not connect to live Zapier, Make, n8n, Slack, CRM, Stripe,
+or any cloud service. All shipped examples use synthetic fixtures.
+
+## Failure classes handled
+
+Each case below uses a short synthetic fixture. The debugger loads the fixture,
+classifies the failure, decides whether a correction is safe, and writes the
+diagnosis result to `examples/output/diagnosis-*.json`.
 
 | Case | Input | Class | Result |
 |---|---|---|---|
@@ -22,10 +44,10 @@ This repo uses short, synthetic fixtures instead of live external-service export
 
 All systems are synthetic and local. The project does not call Zapier, Make, n8n, Airtable, Slack, CRM, Google, Shopify, Stripe, cloud services, or any live webhook endpoint.
 
-## Evidence package
+## Screenshots
 
-Below is the local proof-of-concept evidence for the debugger: failure intake, diagnosis,
-safe replay decisions, generated reports, duplicate guards, and quality gates.
+These screenshots show failure intake, diagnosis, safe replay decisions, generated
+fix reports, duplicate guards, and quality gates — all from synthetic local fixtures.
 
 [![Automation Debugger flow proof](docs/screenshots/01-flow-overview.png)](docs/screenshots/01-flow-overview.png)
 
@@ -43,21 +65,26 @@ safe replay decisions, generated reports, duplicate guards, and quality gates.
 
 [![Quality gate proof](docs/screenshots/08-quality-gates.png)](docs/screenshots/08-quality-gates.png)
 
-Supporting written evidence:
+Supporting docs:
 
-- Command evidence and local gates: `docs/evidence.md`
+- Command verification and local gates: `docs/evidence.md`
 - Walkthrough narrative: `docs/sandbox-walkthrough.md`
 - Case study: `docs/case-study.md`
 - Screenshot guide: `docs/screenshots/README.md`
 
 The screenshots are generated proof panels from synthetic local fixtures. They show no live account screens, credentials, browser tabs, private desktop context, or customer data.
 
+See [`docs/case-study.md`](docs/case-study.md) for a worked example: diagnosing
+and repairing a broken synthetic order-intake automation.
+
 ## Run the sandbox walkthrough
 
 ```bash
-python -m venv .venv
+# Use any Python 3.11 interpreter available on your system.
+# If your `uv` build does not accept `3.11`, pass an explicit interpreter path (e.g. `python3.11`).
+uv venv --python 3.11 .venv
 source .venv/bin/activate
-pip install -e ".[dev]"
+uv pip install -e ".[dev]"
 
 PYTHONPATH=src python -m automation_debugger.cli inspect examples/input/malformed-date.json
 PYTHONPATH=src python -m automation_debugger.cli replay examples/input/malformed-date.json
@@ -74,7 +101,7 @@ python -m mypy src
 PYTHONPATH=src python scripts/capture_screenshots.py
 ```
 
-## Local API proof
+## Local API
 
 ```bash
 PYTHONPATH=src uvicorn automation_debugger.api:app --host 127.0.0.1 --port 8011
@@ -86,42 +113,40 @@ Endpoints:
 | Endpoint | Purpose |
 |---|---|
 | `GET /health` | Fixture-safety and service health flags. |
-| `POST /diagnose` | Classify a broken event payload and return traceable diagnosis evidence. |
+| `POST /diagnose` | Classify a broken event payload and return traceable diagnosis results. |
 | `POST /replay` | Apply safe correction/replay logic against local mock destinations only. |
-| `POST /report` | Generate JSON/Markdown/HTML fix-report content from diagnosis evidence. |
+| `POST /report` | Generate JSON/Markdown/HTML fix-report content from diagnosis results. |
 
-See `docs/api.md` and `examples/api-responses/` for request/response evidence.
+See `docs/api.md` and `examples/api-responses/` for request/response examples.
 
-## Built on Automation Kit conventions
+## Companion to Automation Kit
 
-Automation Kit is the reusable backbone. This repo is the thin repair/debug case study.
+Automation Kit is the reusable pattern layer. Automation Debugger is the thin
+repair/diagnosis companion case study.
 
-Used backbone-style contracts:
+Shared pattern conventions:
 
 - deterministic synthetic fixtures under `examples/input/`;
 - typed workflow/event models under `src/automation_debugger/models.py`;
-- local mock replay and dead-letter evidence instead of live external-service calls;
+- local mock replay and dead-letter records instead of live external-service calls;
 - repeatable CLI/API/report outputs under `examples/output/`;
-- screenshot and gate evidence under `docs/screenshots/` and `docs/evidence.md`.
+- screenshot and gate verification under `docs/screenshots/` and `docs/evidence.md`.
 
 See `docs/automation-kit-backbone.md` for the explicit backbone relationship.
 
-## Relationship to API Webhook Bridge
+## Green path + repair path
 
-`api-webhook-bridge` proves the green path: validate one approved event, map it into destination-shaped operations, return audit evidence, and stop before live credentials.
+Automation Debugger and [api-webhook-bridge](https://github.com/stefan-mcf/api-webhook-bridge)
+cover the two most common integration milestones:
 
-`automation-debugger` proves the repair path: inspect failed events, normalize platform exports, identify root cause, decide whether replay is safe, and create fix reports for review.
-
-Together they cover the two common integration milestones:
-
-| Milestone | Repo | Proof |
+| Milestone | Repo | What it handles |
 |---|---|---|
-| Build a safe first webhook/API bridge | `api-webhook-bridge` | Valid event -> mapped destination proof -> audit evidence |
-| Diagnose and repair a broken automation | `automation-debugger` | Failed event -> diagnosis -> correction/refusal -> replay/report evidence |
+| Build a safe first webhook/API bridge | `api-webhook-bridge` | Valid event → mapped destination → audit trail |
+| Diagnose and repair a broken automation | `automation-debugger` | Failed event → diagnosis → correction/refusal → fix report |
 
 ## Project docs
 
-| Proof surface | Path |
+| Doc | Path |
 |---|---|
 | Architecture | `docs/architecture.md` |
 | Automation Kit relationship | `docs/automation-kit-backbone.md` |
@@ -129,7 +154,7 @@ Together they cover the two common integration milestones:
 | FastAPI notes | `docs/api.md` |
 | Sandbox walkthrough | `docs/sandbox-walkthrough.md` |
 | Case study | `docs/case-study.md` |
-| Command evidence and gates | `docs/evidence.md` |
+| Command verification and gates | `docs/evidence.md` |
 | Screenshot guide | `docs/screenshots/README.md` |
 | Readiness checklist | `docs/public-readiness-checklist.md` |
 
@@ -137,11 +162,11 @@ Together they cover the two common integration milestones:
 
 - Fixture-safe synthetic examples only.
 - Empty credential placeholders only.
-- `fixture_safe: true`, `live_services_used: false`, and `synthetic_data_only: true` are carried through proof outputs.
+- `fixture_safe: true`, `live_services_used: false`, and `synthetic_data_only: true` are carried through all outputs.
 - Replay uses local mock destinations only.
-- Dead-letter evidence is written locally for unsafe events.
-- No live external-service calls, customer data, cloud resources, public visibility changes, releases, or external delivery actions are part of this local proof.
-- Public release, live external-service proof, credentials, real webhook delivery logs, and cloud deployment remain human-gated.
+- Dead-letter records are written locally for unsafe events.
+- No live external-service calls, customer data, cloud resources, public visibility changes, releases, or external delivery actions are part of the default local workflow.
+- Public release, live external-service testing, credentials, real webhook delivery logs, and cloud deployment remain human-gated.
 
 ## Quality gates
 
@@ -154,7 +179,7 @@ PYTHONPATH=src python scripts/capture_screenshots.py
 git diff --check
 ```
 
-Current proof status is summarized in `docs/evidence.md` and `docs/public-readiness-checklist.md`.
+Current verification status is summarized in `docs/evidence.md` and `docs/public-readiness-checklist.md`.
 
 ## Environment
 
@@ -162,8 +187,8 @@ See `.env.example`:
 
 | Variable | Default | Description |
 |---|---|---|
-| `AUTOMATION_DEBUGGER_USE_LIVE_SERVICES` | `false` | Reserved opt-in gate; live services are not used by this proof. |
-| `AUTOMATION_DEBUGGER_MOCK_SEED` | `42` | Deterministic mock/evidence seed. |
+| `AUTOMATION_DEBUGGER_USE_LIVE_SERVICES` | `false` | Reserved opt-in gate; live services are disabled by default. |
+| `AUTOMATION_DEBUGGER_MOCK_SEED` | `42` | Deterministic mock data seed. |
 | `AUTOMATION_KIT_PATH` | empty | Optional sibling checkout path for relationship docs and local experimentation. |
 
 ## Repository layout

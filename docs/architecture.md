@@ -1,6 +1,6 @@
 # Architecture
 
-Automation Debugger is the repair/debug spoke in the Workflow Automation Portfolio. It stays thin: shared runtime conventions belong in Automation Kit, working green-path integration proof belongs in api-webhook-bridge, and this repo focuses on failed events.
+Automation Debugger is the repair/diagnosis companion case study to Automation Kit and api-webhook-bridge. It stays thin: shared runtime conventions belong in Automation Kit, green-path integration belongs in api-webhook-bridge, and this repo focuses on failed events.
 
 ## Layers
 
@@ -14,4 +14,4 @@ fixture_safe: true
 live_services_used: false
 synthetic_data_only: true
 
-No live Zapier, Make, n8n, CRM, Google, Airtable, Slack, Discord, Stripe, cloud, webhook, LLM, OCR, or payment service is contacted by this proof.
+No live Zapier, Make, n8n, CRM, Google, Airtable, Slack, Discord, Stripe, cloud, webhook, LLM, OCR, or payment service is contacted by the default local workflow.
