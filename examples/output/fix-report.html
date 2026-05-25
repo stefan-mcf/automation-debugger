@@ -18,8 +18,8 @@ Synthetic generic_webhook fixture diagnosed as malformed_date; replay status: pa
 
 ## What broke
 
-- Trace ID: `trace-125f687e66`
-- Workflow: Synthetic Automation Debug Session
+- Trace ID: `trace-d811635471`
+- Workflow: Synthetic Date Formatter
 - Platform fixture: generic_webhook
 - Failure class: `malformed_date`
 - Severity: medium
@@ -43,12 +43,18 @@ Payload date format is malformed for the destination mapping.
 
 ```json
 {
-  &quot;created_at&quot;: &quot;2026-05-06&quot;,
-  &quot;email&quot;: &quot;x@example.test&quot;,
-  &quot;event_id&quot;: &quot;evt-report&quot;,
+  &quot;created_at&quot;: &quot;2026-06-05&quot;,
+  &quot;destination&quot;: &quot;mock-crm&quot;,
+  &quot;email&quot;: &quot;date.person@example.test&quot;,
+  &quot;event_id&quot;: &quot;evt-date-001&quot;,
+  &quot;fixture_safe&quot;: true,
+  &quot;idempotency_key&quot;: &quot;date-001&quot;,
+  &quot;live_services_used&quot;: false,
+  &quot;platform&quot;: &quot;generic_webhook&quot;,
   &quot;platform_hint&quot;: &quot;generic_webhook&quot;,
   &quot;synthetic_data_only&quot;: true,
-  &quot;type&quot;: &quot;lead.created&quot;
+  &quot;type&quot;: &quot;lead.created&quot;,
+  &quot;workflow_name&quot;: &quot;Synthetic Date Formatter&quot;
 }
 ```
 
