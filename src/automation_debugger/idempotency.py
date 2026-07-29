@@ -1,4 +1,4 @@
-"""Local idempotency guard for synthetic replay proof."""
+"""Local idempotency guard for replay decisions."""
 
 from __future__ import annotations
 

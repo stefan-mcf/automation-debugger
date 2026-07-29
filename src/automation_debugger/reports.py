@@ -58,7 +58,7 @@ def report_to_markdown(report: FixReport) -> str:
 
 ## Business impact (synthetic counts only)
 
-This proof uses one synthetic failed event. No live services, customer records, or credentials were used.
+This report uses one synthetic failed event. No live services, customer records, or credentials were used.
 
 ## Root cause
 

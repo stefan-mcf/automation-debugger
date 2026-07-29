@@ -10,7 +10,7 @@ Handoff example:
 2. Debugger normalizes it through `platform_parsers.py`.
 3. Debugger diagnoses failure class, proposes deterministic correction if safe, refuses unsafe replay otherwise, and packages a report.
 
-For Mock Job 01 (`order-intake-ops-sync`), this is the failure-path companion to the Shopify-like order / Stripe-like payment proof: `api-webhook-bridge` shows that a clean approved event can be accepted and mapped, while `automation-debugger` shows what happens when signature checks fail, duplicates arrive, routing targets mismatch, or malformed fields would make downstream Airtable/Sheets-style reconciliation unsafe.
+For Mock Job 01 (`order-intake-ops-sync`), this is the failure-path companion to the Shopify-like order and Stripe-like payment flow: `api-webhook-bridge` shows that a clean approved event can be accepted and mapped, while `automation-debugger` shows what happens when signature checks fail, duplicates arrive, routing targets mismatch, or malformed fields would make downstream Airtable and Sheets-style reconciliation unsafe.
 
 Representative artifacts for that buyer story:
 - `examples/output/diagnosis-malformed-date.json`

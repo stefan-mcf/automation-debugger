@@ -44,7 +44,7 @@ PYTHONPATH=src python scripts/capture_screenshots.py
 
 ## Screenshot list
 
-See `docs/screenshots/README.md` for captions and proof purpose.
+See `docs/screenshots/README.md` for captions and intended use.
 
 ## Generated report outputs
 

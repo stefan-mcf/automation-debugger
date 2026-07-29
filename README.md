@@ -1,174 +1,214 @@
 # Automation Debugger
 
-A fixture-safe tool for diagnosing and repairing broken automation events — Zapier,
-Make, n8n, webhook, and API-bridge failures — before any live retry is attempted.
+Diagnose failed Zapier, Make, n8n, webhook, and API workflows before a retry creates duplicate or incorrect downstream work.
 
-Automation Debugger takes a failed workflow event, normalizes it regardless of the
-source platform, classifies the failure, decides whether a safe correction exists,
-and either replays the corrected event against local mock destinations or dead-letters
-it with a clear reason. Every decision is traceable, every output is deterministic,
-and no live service is ever contacted by default.
+[Read the full project story](https://smsystems.au/work/automation-debugger/) · [Review the architecture](docs/architecture.md) · [Run the walkthrough](#run-the-worked-example)
 
-## What this is for
+## Why this exists
 
-Use Automation Debugger when you need to:
+A failed automation rarely arrives with a clean root cause. It usually arrives as a provider export, a payload, a partial error message, and a request to run it again.
 
-- diagnose why a Zapier step, Make scenario, n8n execution, or webhook handler failed
-- normalize failure exports from different platforms into one inspectable shape
-- classify failures deterministically: malformed fields, missing data, duplicates,
-  destination mismatches, invalid signatures, rate limits, and downstream error loops
-- decide whether safe replay is possible or the event should be dead-lettered
-- generate fix reports (JSON, Markdown, HTML) for review before touching live systems
-- integrate a safe diagnosis/replay step into a broader automation pipeline via CLI or API
+That is risky when:
 
-Automation Debugger does not connect to live Zapier, Make, n8n, Slack, CRM, Stripe,
-or any cloud service. All shipped examples use synthetic fixtures.
+- one destination may have processed the event already;
+- provider exports use different field shapes;
+- the original payload has a malformed or missing value;
+- a signature is invalid;
+- retries are already looping;
+- the event is pointed at the wrong destination.
 
-## Failure classes handled
+Automation Debugger separates diagnosis from replay. It normalizes the input, assigns a trace ID, classifies the failure, and decides whether a corrected local replay is safe. Duplicate, invalid-signature, and already-applied events stop with a structured refusal and zero destination operations.
 
-Each case below uses a short synthetic fixture. The debugger loads the fixture,
-classifies the failure, decides whether a correction is safe, and writes the
-diagnosis result to `examples/output/diagnosis-*.json`.
+## What it does
 
-| Case | Input | Class | Result |
-|---|---|---|---|
-| Malformed date | `malformed-date` | `malformed_date` | Correct and replay locally. |
-| Missing field | `missing-required-field` | `missing_required_field` | Dead-letter input. |
-| Duplicate event | `duplicate-event` | `duplicate_event` | Refuse replay; keep trace. |
-| Wrong destination | `destination-mismatch` | `destination_mismatch` | Block wrong target. |
-| Unknown event | `unknown-event-type` | `unknown_event_type` | Require mapping review. |
-| Bad signature | `webhook-invalid-signature` | `invalid_signature` | Refuse replay. |
-| Retry storm | `downstream-500-loop` | `downstream_error_loop` | Stop retries locally. |
-| Backoff needed | `rate-limit-backoff` | `rate_limit_backoff` | Return retry guidance. |
-| Platform exports | Zapier / Make / n8n | normalized evidence | Parse source shape locally. |
+```text
+Provider export or webhook fixture
+              │
+              ▼
+      Normalize the event
+              │
+              ▼
+      Classify the failure
+              │
+              ▼
+       Evaluate replay risk
+          ┌───┴────┐
+          ▼        ▼
+   local replay   refusal
+          └───┬────┘
+              ▼
+    diagnosis and handover
+```
 
-All systems are synthetic and local. The project does not call Zapier, Make, n8n, Airtable, Slack, CRM, Google, Shopify, Stripe, cloud services, or any live webhook endpoint.
+The same contracts and safety rules are available through:
+
+- a Typer CLI for inspection, replay, and report generation;
+- a FastAPI service for integration into a larger diagnostic workflow;
+- JSON, Markdown, and HTML outputs for engineering handover;
+- committed fixtures for repeatable failure scenarios.
+
+## Failure classes
+
+| Scenario | Classification | Action |
+| --- | --- | --- |
+| Malformed date | `malformed_date` | Correct the deterministic field and replay locally. |
+| Missing required field | `missing_required_field` | Stop and write a dead-letter record. |
+| Duplicate event | `duplicate_event` | Refuse replay and retain the trace. |
+| Wrong destination | `destination_mismatch` | Block the target and require mapping review. |
+| Unknown event type | `unknown_event_type` | Stop until an explicit mapping exists. |
+| Invalid signature | `invalid_signature` | Refuse replay. |
+| Downstream error loop | `downstream_error_loop` | Stop repeated attempts locally. |
+| Rate limit | `rate_limit_backoff` | Return bounded retry guidance. |
+| Provider export | platform normalization | Convert Zapier, Make, and n8n shapes into the common event contract. |
+
+## Worked failure path
+
+The committed `malformed-date` case shows the complete path:
+
+1. Inspect a failed event and assign its trace ID.
+2. Classify the malformed date without changing the original input.
+3. Apply the deterministic correction.
+4. Re-evaluate idempotency and destination safety.
+5. Replay against the local adapter.
+6. Generate the diagnosis, replay record, and handover report.
+
+The duplicate case follows the same intake path but exits with a replay refusal. That distinction is deliberate: a technically valid payload can still be unsafe to repeat.
 
 ## Screenshots
 
-These screenshots show failure intake, diagnosis, safe replay decisions, generated
-fix reports, duplicate guards, and quality gates — all from synthetic local fixtures.
+[![Automation Debugger system flow](docs/screenshots/01-flow-overview.png)](docs/screenshots/01-flow-overview.png)
 
-[![Automation Debugger flow proof](docs/screenshots/01-flow-overview.png)](docs/screenshots/01-flow-overview.png)
+[![CLI diagnosis](docs/screenshots/02-cli-diagnosis.png)](docs/screenshots/02-cli-diagnosis.png)
 
-[![CLI diagnosis proof](docs/screenshots/02-cli-proof.png)](docs/screenshots/02-cli-proof.png)
+[![Local API endpoints](docs/screenshots/03-openapi-endpoints.png)](docs/screenshots/03-openapi-endpoints.png)
 
-[![Local API proof](docs/screenshots/03-openapi-endpoints.png)](docs/screenshots/03-openapi-endpoints.png)
+[![Duplicate replay refusal](docs/screenshots/07-duplicate-guard.png)](docs/screenshots/07-duplicate-guard.png)
 
-[![Diagnosis JSON proof](docs/screenshots/04-diagnosis-output.png)](docs/screenshots/04-diagnosis-output.png)
+The images are generated from the committed local cases. They contain no provider account screens, customer data, credentials, browser tabs, or private desktop context.
 
-[![Corrected replay proof](docs/screenshots/05-corrected-replay.png)](docs/screenshots/05-corrected-replay.png)
+<details>
+<summary>Additional implementation screens</summary>
 
-[![Generated fix report proof](docs/screenshots/06-fix-report.png)](docs/screenshots/06-fix-report.png)
+[![Structured diagnosis output](docs/screenshots/04-diagnosis-output.png)](docs/screenshots/04-diagnosis-output.png)
 
-[![Duplicate guard proof](docs/screenshots/07-duplicate-guard.png)](docs/screenshots/07-duplicate-guard.png)
+[![Corrected local replay](docs/screenshots/05-corrected-replay.png)](docs/screenshots/05-corrected-replay.png)
 
-[![Quality gate proof](docs/screenshots/08-quality-gates.png)](docs/screenshots/08-quality-gates.png)
+[![Generated handover report](docs/screenshots/06-fix-report.png)](docs/screenshots/06-fix-report.png)
 
-Supporting docs:
+[![Test and quality checks](docs/screenshots/08-quality-gates.png)](docs/screenshots/08-quality-gates.png)
 
-- Command verification and local gates: `docs/evidence.md`
-- Walkthrough narrative: `docs/sandbox-walkthrough.md`
-- Case study: `docs/case-study.md`
-- Screenshot guide: `docs/screenshots/README.md`
+</details>
 
-The screenshots are generated proof panels from synthetic local fixtures. They show no live account screens, credentials, browser tabs, private desktop context, or customer data.
+## Run the worked example
 
-See [`docs/case-study.md`](docs/case-study.md) for a worked example: diagnosing
-and repairing a broken synthetic order-intake automation.
-
-## Run the sandbox walkthrough
+Python 3.11 or newer is recommended.
 
 ```bash
-# Use any Python 3.11 interpreter available on your system.
-# If your `uv` build does not accept `3.11`, pass an explicit interpreter path (e.g. `python3.11`).
 uv venv --python 3.11 .venv
 source .venv/bin/activate
 uv pip install -e ".[dev]"
+```
 
+Inspect, replay, and report:
+
+```bash
 PYTHONPATH=src python -m automation_debugger.cli inspect examples/input/malformed-date.json
 PYTHONPATH=src python -m automation_debugger.cli replay examples/input/malformed-date.json
-PYTHONPATH=src python -m automation_debugger.cli report examples/input/malformed-date.json --format html --output examples/output/fix-report.html
+PYTHONPATH=src python -m automation_debugger.cli report \
+  examples/input/malformed-date.json \
+  --format html \
+  --output examples/output/fix-report.html
+```
+
+Check every committed input and expected output:
+
+```bash
 python scripts/verify_examples.py
 ```
 
-Useful local checks:
+## CLI
 
 ```bash
-PYTHONPATH=src python -m pytest -q
-python -m ruff check .
-python -m mypy src
-PYTHONPATH=src python scripts/capture_screenshots.py
+PYTHONPATH=src python -m automation_debugger.cli --help
 ```
 
-## Local API
+Core commands:
+
+| Command | Purpose |
+| --- | --- |
+| `inspect` | Normalize an event and return a deterministic diagnosis. |
+| `replay` | Apply an allowed correction and run the local destination adapter. |
+| `report` | Render the diagnosis and replay decision as JSON, Markdown, or HTML. |
+
+## API
+
+Start the local service:
 
 ```bash
 PYTHONPATH=src uvicorn automation_debugger.api:app --host 127.0.0.1 --port 8011
 curl -fsS http://127.0.0.1:8011/health
 ```
 
-Endpoints:
-
 | Endpoint | Purpose |
-|---|---|
-| `GET /health` | Fixture-safety and service health flags. |
-| `POST /diagnose` | Classify a broken event payload and return traceable diagnosis results. |
-| `POST /replay` | Apply safe correction/replay logic against local mock destinations only. |
-| `POST /report` | Generate JSON/Markdown/HTML fix-report content from diagnosis results. |
+| --- | --- |
+| `GET /health` | Report local service and safety configuration. |
+| `POST /diagnose` | Classify an event and return its traceable diagnosis. |
+| `POST /replay` | Apply the same correction and refusal rules used by the CLI. |
+| `POST /report` | Generate JSON, Markdown, or HTML report content. |
 
-See `docs/api.md` and `examples/api-responses/` for request/response examples.
+Request and response examples live in [`examples/api-responses/`](examples/api-responses/). Additional API notes are in [`docs/api.md`](docs/api.md).
 
-## Companion to Automation Kit
+## Outputs
 
-Automation Kit is the reusable pattern layer. Automation Debugger is the thin
-repair/diagnosis companion case study.
+Every run can produce:
 
-Shared pattern conventions:
+- normalized event data;
+- a failure classification and severity;
+- the affected fields and root cause;
+- a proposed correction when one is deterministic;
+- a replay success or refusal record;
+- destination-operation accounting;
+- a local dead-letter record when processing must stop;
+- a readable engineering handover.
 
-- deterministic synthetic fixtures under `examples/input/`;
-- typed workflow/event models under `src/automation_debugger/models.py`;
-- local mock replay and dead-letter records instead of live external-service calls;
-- repeatable CLI/API/report outputs under `examples/output/`;
-- screenshot and gate verification under `docs/screenshots/` and `docs/evidence.md`.
+This makes the next decision inspectable without requiring another engineer to reconstruct the original run.
 
-See `docs/automation-kit-backbone.md` for the explicit backbone relationship.
+## Architecture
 
-## Green path + repair path
+```text
+src/automation_debugger/
+├── platform_parsers.py  # Zapier, Make, n8n, and webhook normalization
+├── diagnosis.py         # deterministic classification
+├── correction.py        # bounded field correction
+├── idempotency.py       # replay refusal and duplicate checks
+├── replay.py            # local destination adapters
+├── dead_letter.py       # stopped-event records
+├── reports.py           # JSON, Markdown, and HTML output
+├── cli.py               # Typer interface
+└── api.py               # FastAPI interface
+```
 
-Automation Debugger and [api-webhook-bridge](https://github.com/stefan-mcf/api-webhook-bridge)
-cover the two most common integration milestones:
+Configuration under [`configs/diagnosis-rules/`](configs/diagnosis-rules/) keeps the failure taxonomy and platform normalization mappings separate from the execution code.
 
-| Milestone | Repo | What it handles |
-|---|---|---|
-| Build a safe first webhook/API bridge | `api-webhook-bridge` | Valid event → mapped destination → audit trail |
-| Diagnose and repair a broken automation | `automation-debugger` | Failed event → diagnosis → correction/refusal → fix report |
+## Engineering decisions
 
-## Project docs
+### Deterministic classification
 
-| Doc | Path |
-|---|---|
-| Architecture | `docs/architecture.md` |
-| Automation Kit relationship | `docs/automation-kit-backbone.md` |
-| API Webhook Bridge relationship | `docs/api-webhook-bridge-integration.md` |
-| FastAPI notes | `docs/api.md` |
-| Sandbox walkthrough | `docs/sandbox-walkthrough.md` |
-| Case study | `docs/case-study.md` |
-| Command verification and gates | `docs/evidence.md` |
-| Screenshot guide | `docs/screenshots/README.md` |
-| Readiness checklist | `docs/public-readiness-checklist.md` |
+The same input and configuration produce the same failure class and recommended action. Replay safety does not depend on an opaque model score.
 
-## Safety boundary
+### Refusal is a valid result
 
-- Fixture-safe synthetic examples only.
-- Empty credential placeholders only.
-- `fixture_safe: true`, `live_services_used: false`, and `synthetic_data_only: true` are carried through all outputs.
-- Replay uses local mock destinations only.
-- Dead-letter records are written locally for unsafe events.
-- No live external-service calls, customer data, cloud resources, public visibility changes, releases, or external delivery actions are part of the default local workflow.
-- Public release, live external-service testing, credentials, real webhook delivery logs, and cloud deployment remain human-gated.
+Duplicate, invalid-signature, and already-applied events produce a structured refusal. The tool does not treat an attempted write as the definition of success.
 
-## Quality gates
+### Input remains immutable
+
+The original event is retained. Corrections are written as a separate candidate payload so the change can be reviewed and compared.
+
+### Destination operations are counted
+
+A replay record reports the destination operations it would produce. Refused cases assert zero operations, which makes duplicate protection testable.
+
+## Validation
 
 ```bash
 PYTHONPATH=src python -m pytest -q
@@ -179,54 +219,19 @@ PYTHONPATH=src python scripts/capture_screenshots.py
 git diff --check
 ```
 
-Current verification status is summarized in `docs/evidence.md` and `docs/public-readiness-checklist.md`.
+The current suite covers normalization, classification, correction, replay, refusal, reporting, API behavior, committed examples, and screenshot generation.
 
-## Environment
+## Operating boundary
 
-See `.env.example`:
+The included examples use synthetic local data and local destination adapters. The project does not sign in to Zapier, Make, n8n, Airtable, a CRM, or another provider. It does not modify production workflows or replay customer events.
 
-| Variable | Default | Description |
-|---|---|---|
-| `AUTOMATION_DEBUGGER_USE_LIVE_SERVICES` | `false` | Reserved opt-in gate; live services are disabled by default. |
-| `AUTOMATION_DEBUGGER_MOCK_SEED` | `42` | Deterministic mock data seed. |
-| `AUTOMATION_KIT_PATH` | empty | Optional sibling checkout path for relationship docs and local experimentation. |
+That boundary keeps the repository reproducible. A real incident response would add an approved provider adapter, scoped credentials, a sanitized event, and a separate live-change review.
 
-## Repository layout
+## Related repositories
 
-```text
-src/automation_debugger/
-  api.py
-  cli.py
-  correction.py
-  dead_letter.py
-  diagnosis.py
-  platform_parsers.py
-  replay.py
-  reports.py
-  webhook_safety.py
-configs/diagnosis-rules/
-  failure-taxonomy.json
-  platform-normalization.json
-examples/
-  input/
-  output/
-  api-responses/
-docs/
-  architecture.md
-  api.md
-  case-study.md
-  evidence.md
-  screenshots/
-scripts/
-  capture_screenshots.py
-  verify_examples.py
-tests/
-```
+- [API Webhook Bridge](https://github.com/stefan-mcf/api-webhook-bridge) covers validated intake, mapping, idempotency, and dead-letter handling on the green path.
+- [Sheets Airtable Sync](https://github.com/stefan-mcf/sheets-airtable-sync) covers reconciliation, data quality, and exception routing after intake.
 
 ## License
 
-MIT License. See `LICENSE`.
-
-## Automation Tools Catalog
-
-Part of [Stefan's automation tools catalog](https://github.com/stefan-mcf/automation-tools).
+MIT License. See [`LICENSE`](LICENSE).

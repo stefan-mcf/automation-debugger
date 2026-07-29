@@ -5,7 +5,7 @@ from PIL import Image, ImageStat
 SCREENSHOT_DIR = Path("docs/screenshots")
 EXPECTED = [
     "01-flow-overview.png",
-    "02-cli-proof.png",
+    "02-cli-diagnosis.png",
     "03-openapi-endpoints.png",
     "04-diagnosis-output.png",
     "05-corrected-replay.png",
@@ -22,7 +22,7 @@ def test_screenshots_are_readable_proof_panels() -> None:
         assert path.stat().st_size > 25_000, f"{name} is too small and may be blank"
         with Image.open(path) as image:
             assert image.size == (1280, 760)
-            assert image.info.get("Proof"), f"{name} is missing proof metadata"
+            assert image.info.get("Automation-Debugger"), f"{name} is missing project metadata"
             stat = ImageStat.Stat(image.convert("RGB"))
             assert max(stat.stddev) > 20, f"{name} has low visual variance and may be blank"
 

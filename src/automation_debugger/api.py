@@ -15,7 +15,7 @@ from automation_debugger.reports import report_to_html, report_to_markdown, writ
 app = FastAPI(
     title="Automation Debugger Local Fixture API",
     version="0.1.0",
-    description="Synthetic/local-only automation failure diagnosis, replay, and report proof.",
+    description="Local automation failure diagnosis, replay, and report generation.",
 )
 
 
@@ -46,10 +46,10 @@ def replay(request: PayloadRequest) -> dict[str, Any]:
 
 @app.post("/report")
 def report(request: PayloadRequest, format: str = "md") -> dict[str, Any]:
-    proof = write_report_files(request.payload)
-    body = report_to_html(proof) if format == "html" else report_to_markdown(proof)
+    report = write_report_files(request.payload)
+    body = report_to_html(report) if format == "html" else report_to_markdown(report)
     return {
-        "trace_id": proof.trace_id,
+        "trace_id": report.trace_id,
         "format": format,
         "body": body,
         "fixture_safe": True,

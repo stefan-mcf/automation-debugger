@@ -5,7 +5,7 @@ Automation Debugger is public at <https://github.com/stefan-mcf/automation-debug
 ## Current public state
 
 - Visibility: public.
-- Role: broken automation diagnosis, replay, and structured fix-report proof spoke.
+- Role: broken automation diagnosis, replay control, and structured fix-report project.
 - CI workflow: `.github/workflows/ci.yml` added in the first-set reconciliation tranche.
 - Boundary: fixture_safe=true, live_services_used=false, synthetic_data_only=true.
 

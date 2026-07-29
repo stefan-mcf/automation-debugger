@@ -1,4 +1,4 @@
-"""Typer CLI for the local fixture-safe proof."""
+"""Typer CLI for local automation diagnosis."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from automation_debugger.diagnosis import diagnose_payload
 from automation_debugger.replay import replay_payload
 from automation_debugger.reports import report_to_html, report_to_markdown, write_report_files
 
-app = typer.Typer(help="Fixture-safe automation diagnosis, replay, and report proof.")
+app = typer.Typer(help="Local automation diagnosis, replay, and report generation.")
 
 
 @app.command()

@@ -15,7 +15,7 @@ Synthetic generic_webhook fixture diagnosed as malformed_date; replay status: pa
 
 ## Business impact (synthetic counts only)
 
-This proof uses one synthetic failed event. No live services, customer records, or credentials were used.
+This report uses one synthetic failed event. No live services, customer records, or credentials were used.
 
 ## Root cause
 
