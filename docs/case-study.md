@@ -6,7 +6,7 @@ Automation Debugger loads the fixture, assigns a stable trace ID, identifies the
 
 ## Buyer-readable outcome
 
-The client gets a concise report showing what broke, why it broke, what changed, whether local replay passed or was refused, and which live-service next steps require explicit approval. In the broader order-intake proof set, this complements `api-webhook-bridge` green-path evidence and `sheets-airtable-sync` downstream reconciliation evidence.
+The client gets a concise report showing what broke, why it broke, what changed, whether local replay passed or was refused, and which live-service next steps require explicit approval. In the broader order-intake project set, this complements the `api-webhook-bridge` green path and `sheets-airtable-sync` downstream reconciliation.
 
 ## Evidence
 

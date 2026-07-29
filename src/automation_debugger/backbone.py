@@ -7,7 +7,7 @@ from typing import Any
 
 try:  # pragma: no cover - depends on sibling checkout/install state
     from auto_kit.mock_clients import MockCRMClient, MockSlackClient
-except ImportError:  # pragma: no cover - fallback for standalone public proof
+except ImportError:  # pragma: no cover - fallback for standalone public project
     MockCRMClient = None
     MockSlackClient = None
 

@@ -12,6 +12,6 @@ except ImportError:
     MockSlackClient = None
 ```
 
-If Automation Kit is not installed, all tests and fixture-safe proof commands still run with local fallback status. This keeps the public proof inspectable as a standalone spoke while documenting the intended backbone relationship.
+If Automation Kit is not installed, all tests and local commands still run with fallback status. This keeps the public project usable as a standalone tool while documenting the intended backbone relationship.
 
 Safety boundary: fixture_safe=true, live_services_used=false, synthetic_data_only=true.

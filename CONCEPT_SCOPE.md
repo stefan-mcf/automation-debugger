@@ -1,10 +1,10 @@
 # Automation Debugger — Concept and Scope
 
-Automation Debugger is a client-shaped Workflow Automation Portfolio proof repo for urgent automation repair/debug jobs. It demonstrates that a broken event can be diagnosed, safely corrected when deterministic, replayed locally when safe, refused when unsafe, and packaged into a clean evidence report.
+Automation Debugger is a workflow diagnosis project for urgent automation repair and debugging work. It demonstrates that a broken event can be diagnosed, safely corrected when deterministic, replayed locally when safe, refused when unsafe, and packaged into a clean engineering report.
 
 ## Relationship to sibling repos
 
-- Automation Kit: reusable local proof runtime/backbone and conventions.
+- Automation Kit: reusable local runtime, backbone, and conventions.
 - api-webhook-bridge: green-path webhook/API integration spoke.
 - automation-debugger: repair/debug spoke for failed webhook/workflow events.
 
@@ -12,7 +12,7 @@ Automation Debugger is a client-shaped Workflow Automation Portfolio proof repo 
 
 Zapier, Make, n8n, webhooks, API bridge handoffs, CRM lead routing, field mapping, idempotency, webhook signatures, retry/backoff, and dead-letter handling.
 
-## Proof flows
+## Core flows
 
 - Broken lead event -> malformed date diagnosis -> corrected local replay.
 - Missing required field -> manual review and replay refusal.

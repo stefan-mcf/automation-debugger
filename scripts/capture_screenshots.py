@@ -124,7 +124,7 @@ def render(path: Path, title: str, subtitle: str, panels: list[dict[str, object]
     draw.text((54, HEIGHT - 45), footer, font=SMALL_FONT, fill=GREEN)
 
     metadata = PngImagePlugin.PngInfo()
-    metadata.add_text("Proof", f"{title}\n{subtitle}\n{footer}")
+    metadata.add_text("Automation-Debugger", f"{title}\n{subtitle}\n{footer}")
     image.save(path, pnginfo=metadata, optimize=True)
 
     stat = ImageStat.Stat(image)
@@ -167,13 +167,13 @@ def main() -> None:
                 "box": (872, 148, 1230, 628),
                 "title": "Evidence",
                 "accent": GREEN,
-                "lines": ["JSON diagnosis files", "local replay logs", "Markdown/HTML fix report", "API response examples", "quality gate proof"],
+                "lines": ["JSON diagnosis files", "local replay logs", "Markdown/HTML fix report", "API response examples", "quality gate results"],
             },
         ],
     )
     render(
-        OUT / "02-cli-proof.png",
-        "CLI Diagnosis Proof",
+        OUT / "02-cli-diagnosis.png",
+        "CLI Diagnosis",
         "`automation-debugger inspect` classifies a malformed date fixture and returns safety fields.",
         [
             {
@@ -213,7 +213,7 @@ def main() -> None:
     )
     render(
         OUT / "04-diagnosis-output.png",
-        "Diagnosis JSON Proof",
+        "Diagnosis JSON",
         "Destination mismatch is detected before any unsafe replay is attempted.",
         [
             {
@@ -233,7 +233,7 @@ def main() -> None:
     )
     render(
         OUT / "05-corrected-replay.png",
-        "Corrected Replay Proof",
+        "Corrected Replay",
         "A safe malformed-date correction replays only against the local mock destination.",
         [
             {
@@ -282,7 +282,7 @@ def main() -> None:
     )
     render(
         OUT / "08-quality-gates.png",
-        "Quality Gate Proof",
+        "Quality Gate Results",
         "The evidence package is regenerated only after local tests and example verification pass.",
         [
             {

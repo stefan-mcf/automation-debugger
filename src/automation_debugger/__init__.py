@@ -1,4 +1,4 @@
-"""Automation Debugger fixture-safe proof package."""
+"""Automation Debugger package."""
 
 from automation_debugger.debugger import diagnose_workflow
 from automation_debugger.diagnosis import diagnose_payload
