@@ -1,6 +1,6 @@
 # Automation Debugger — Concept and Scope
 
-Automation Debugger is a workflow diagnosis project for urgent automation repair and debugging work. It demonstrates that a broken event can be diagnosed, safely corrected when deterministic, replayed locally when safe, refused when unsafe, and packaged into a clean engineering report.
+Automation Debugger is a workflow diagnosis project for urgent automation repair and debugging work. A broken event can be diagnosed, safely corrected when deterministic, replayed locally when safe, refused when unsafe, and packaged into a clean engineering report.
 
 ## Relationship to sibling repos
 

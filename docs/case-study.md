@@ -18,7 +18,7 @@ The tool needed to answer five questions consistently:
 4. Would a replay target the intended destination?
 5. What should the next engineer or operator do?
 
-## What I built
+## System design
 
 ```text
 provider export or webhook record
