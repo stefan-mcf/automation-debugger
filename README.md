@@ -2,7 +2,7 @@
 
 Diagnose failed Zapier, Make, n8n, webhook, and API workflows before a retry creates duplicate or incorrect downstream work.
 
-[Read the full project story](https://smsystems.au/work/automation-debugger/) · [Review the architecture](docs/architecture.md) · [Run the walkthrough](#run-the-worked-example)
+[Read the case study](docs/case-study.md) · [Review the architecture](docs/architecture.md) · [Run the walkthrough](#run-the-worked-example)
 
 ## Why this exists
 
