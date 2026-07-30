@@ -19,7 +19,7 @@ That is risky when:
 
 Automation Debugger separates diagnosis from replay. It normalizes the input, assigns a trace ID, classifies the failure, and decides whether a corrected local replay is safe. Duplicate, invalid-signature, and already-applied events stop with a structured refusal and zero destination operations.
 
-## What it does
+## Capabilities
 
 ```text
 Provider export or webhook fixture
