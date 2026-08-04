@@ -32,7 +32,7 @@
   },
   "replay_result": null,
   "handoff_notes": "Verify HMAC secret and captured raw body before any live retry.",
-  "evidence": [
+  "observations": [
     {
       "step": "webhook_auth",
       "message": "Invalid fixture HMAC signature.",

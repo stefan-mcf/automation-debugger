@@ -35,7 +35,7 @@
     },
     "replay_result": null,
     "handoff_notes": "Normalize date formatting before one local mock replay.",
-    "evidence": [
+    "observations": [
       {
         "step": "formatter",
         "message": "Date field required normalization.",

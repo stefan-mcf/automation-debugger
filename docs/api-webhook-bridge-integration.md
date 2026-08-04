@@ -18,6 +18,6 @@ Representative artifacts for that buyer story:
 - `examples/output/replay-success.json`
 - `examples/output/replay-refused.json`
 - `examples/output/fix-report.md`
-- `docs/screenshots/07-duplicate-guard.png`
+- `docs/screenshots/04-replay-guardrail.png`
 
 Safety boundary: fixture_safe=true, live_services_used=false, synthetic_data_only=true.

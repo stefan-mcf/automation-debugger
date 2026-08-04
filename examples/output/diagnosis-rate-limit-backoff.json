@@ -32,7 +32,7 @@
   },
   "replay_result": null,
   "handoff_notes": "Apply backoff policy before approved replay.",
-  "evidence": [
+  "observations": [
     {
       "step": "retry_policy",
       "message": "Rate limit/backoff condition detected.",

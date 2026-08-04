@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from automation_debugger.backbone import as_dict, get_backbone_status
 from automation_debugger.diagnosis import diagnose_payload
 from automation_debugger.replay import replay_payload
-from automation_debugger.reports import report_to_html, report_to_markdown, write_report_files
+from automation_debugger.reports import build_report, report_to_html, report_to_markdown
 
 app = FastAPI(
     title="Automation Debugger Local Fixture API",
@@ -46,7 +46,7 @@ def replay(request: PayloadRequest) -> dict[str, Any]:
 
 @app.post("/report")
 def report(request: PayloadRequest, format: str = "md") -> dict[str, Any]:
-    report = write_report_files(request.payload)
+    report = build_report(request.payload)
     body = report_to_html(report) if format == "html" else report_to_markdown(report)
     return {
         "trace_id": report.trace_id,

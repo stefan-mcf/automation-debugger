@@ -87,8 +87,8 @@ The repository provides:
 - stable trace and idempotency identifiers;
 - dead-letter output for events that must stop;
 - CLI and API access to the same rules;
-- 32 committed JSON examples and a recorded quality run of 44 passing tests;
-- reproducible screenshots and handover reports generated from the committed scenarios.
+- committed JSON examples validated as part of the test suite;
+- six reproducible implementation images and operating reports generated from controlled scenarios.
 
 The result is a diagnostic workflow that can be reviewed, tested, and extended without relying on a live customer account to understand its behaviour.
 
@@ -102,7 +102,7 @@ A production implementation would add an approved provider adapter, scoped crede
 
 - [Architecture](architecture.md)
 - [API surface](api.md)
-- [Worked local walkthrough](sandbox-walkthrough.md)
-- [Validation record](evidence.md)
-- [Generated screenshots](screenshots/README.md)
+- [Local operation](local-operation.md)
+- [Validation record](validation.md)
+- [Generated images](screenshots/README.md)
 - [Back to the repository overview](../README.md)

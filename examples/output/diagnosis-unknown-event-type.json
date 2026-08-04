@@ -29,7 +29,7 @@
   },
   "replay_result": null,
   "handoff_notes": "Add an approved routing branch before retrying.",
-  "evidence": [
+  "observations": [
     {
       "step": "event_router",
       "message": "Unknown event type: invoice.deleted",

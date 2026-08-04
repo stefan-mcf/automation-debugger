@@ -64,12 +64,12 @@ This report uses one synthetic failed event. No live services, customer records,
 
 {diagnosis.diagnosis_summary}
 
-## Evidence table
+## Diagnostic observations
 
-| Step | Evidence |
+| Step | Observation |
 | --- | --- |
 """
-        + "\n".join(f"| {item.step} | {item.message} |" for item in diagnosis.evidence)
+        + "\n".join(f"| {item.step} | {item.message} |" for item in diagnosis.observations)
         + f"""
 
 ## Corrected payload / field diff
@@ -119,7 +119,7 @@ pre {{ white-space: pre-wrap; background:#0f172a; color:#e2e8f0; padding:24px; b
 .badge {{ display:inline-block; background:#dcfce7; color:#166534; border-radius:999px; padding:6px 12px; font-family:monospace; }}
 </style>
 </head>
-<body><main><p class=\"badge\">fixture_safe=true · live_services_used=false · synthetic_data_only=true</p><pre>{md}</pre></main></body>
+<body><main><p class=\"badge\">fixture_safe=true | live_services_used=false | synthetic_data_only=true</p><pre>{md}</pre></main></body>
 </html>"""
 
 

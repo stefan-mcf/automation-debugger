@@ -2,7 +2,7 @@
   "name": "automation-debugger",
   "title": "Automation Debugger",
   "description": "Broken automation diagnosis, correction, replay control, and fix-report generation for Zapier, Make, n8n, webhook, and API bridge failure scenarios.",
-  "private": true,
+  "private": false,
   "fixture_safe": true,
   "live_services_used": false,
   "synthetic_data_only": true,

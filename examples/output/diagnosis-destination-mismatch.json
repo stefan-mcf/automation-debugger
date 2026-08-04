@@ -34,7 +34,7 @@
   },
   "replay_result": null,
   "handoff_notes": "Update destination mapping and replay one approved synthetic sample.",
-  "evidence": [
+  "observations": [
     {
       "step": "routing",
       "message": "Destination mismatch corrected locally.",
