@@ -1,4 +1,4 @@
-"""Local JSON dead-letter evidence for refused/unsafe replay."""
+"""Local JSON dead-letter records for refused or unsafe replay."""
 
 from __future__ import annotations
 

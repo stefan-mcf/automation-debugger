@@ -30,7 +30,7 @@
   },
   "replay_result": null,
   "handoff_notes": "Request a corrected sample payload before retrying.",
-  "evidence": [
+  "observations": [
     {
       "step": "field_mapping",
       "message": "Required email field is missing.",

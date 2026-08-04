@@ -33,7 +33,7 @@ class SafetyBoundary(BaseModel):
     synthetic_data_only: Literal[True] = True
 
 
-class EventEvidence(BaseModel):
+class DiagnosticObservation(BaseModel):
     step: str
     message: str
     fields: list[str] = Field(default_factory=list)
@@ -70,7 +70,7 @@ class DiagnosisResult(SafetyBoundary):
     corrected_payload: dict[str, Any] = Field(default_factory=dict)
     replay_result: ReplayResult | None = None
     handoff_notes: str = ""
-    evidence: list[EventEvidence] = Field(default_factory=list)
+    observations: list[DiagnosticObservation] = Field(default_factory=list)
 
 
 class FixReport(SafetyBoundary):

@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from automation_debugger.idempotency import InMemoryIdempotencyStore
 from automation_debugger.replay import replay_payload
 
@@ -19,8 +21,10 @@ def test_invalid_signature_replay_is_blocked() -> None:
     assert result.status == "blocked"
 
 
-def test_downstream_loop_is_dead_lettered() -> None:
-    result = replay_payload("examples/input/downstream-500-loop.json")
+def test_downstream_loop_is_dead_lettered(tmp_path: Path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    fixture = Path("examples/input/downstream-500-loop.json").resolve()
+    monkeypatch.chdir(tmp_path)
+    result = replay_payload(str(fixture))
     assert result.status == "dead_lettered"
     assert result.dead_letter_path is not None
 

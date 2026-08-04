@@ -2,106 +2,108 @@
 
 Diagnose failed Zapier, Make, n8n, webhook, and API workflows before a retry creates duplicate or incorrect downstream work.
 
-[Read the case study](docs/case-study.md) · [Review the architecture](docs/architecture.md) · [Run the walkthrough](#run-the-worked-example)
+[Case study](docs/case-study.md) | [Architecture](docs/architecture.md) | [API reference](docs/api.md)
 
-## Why this exists
+## Overview
 
-A failed automation rarely arrives with a clean root cause. It usually arrives as a provider export, a payload, a partial error message, and a request to run it again.
+Automation Debugger separates diagnosis from replay. It normalizes provider-shaped input, assigns a stable trace ID, classifies the failure, proposes deterministic corrections, and decides whether a local replay is safe.
 
-That is risky when:
-
-- one destination may have processed the event already;
-- provider exports use different field shapes;
-- the original payload has a malformed or missing value;
-- a signature is invalid;
-- retries are already looping;
-- the event is pointed at the wrong destination.
-
-Automation Debugger separates diagnosis from replay. It normalizes the input, assigns a trace ID, classifies the failure, and decides whether a corrected local replay is safe. Duplicate, invalid-signature, and already-applied events stop with a structured refusal and zero destination operations.
+Duplicate events, invalid signatures, missing required fields, unknown event types, and repeated downstream errors stop with structured operator guidance. Safe corrections run only against the local mock destination.
 
 ## Capabilities
 
+- Normalizes Zapier, Make, n8n, and generic webhook failure exports.
+- Classifies ten success and failure states through a typed taxonomy.
+- Applies deterministic field corrections without mutating the source fixture.
+- Blocks duplicate, invalid-signature, and unsafe retry paths.
+- Writes local dead-letter records for repeated downstream failures.
+- Produces JSON, Markdown, and HTML operating reports.
+- Exposes the same contracts through a Typer CLI and FastAPI service.
+
+## Operating flow
+
 ```text
 Provider export or webhook fixture
-              │
-              ▼
+              |
+              v
       Normalize the event
-              │
-              ▼
+              |
+              v
       Classify the failure
-              │
-              ▼
+              |
+              v
        Evaluate replay risk
-          ┌───┴────┐
-          ▼        ▼
+          /        \
+         v          v
    local replay   refusal
-          └───┬────┘
-              ▼
-    diagnosis and handover
+          \        /
+           v      v
+     operating report
 ```
 
-The same contracts and safety rules are available through:
+The source fixture remains unchanged. A corrected payload is evaluated separately, and every replay result includes the trace ID, destination boundary, operation count, and safety fields.
 
-- a Typer CLI for inspection, replay, and report generation;
-- a FastAPI service for integration into a larger diagnostic workflow;
-- JSON, Markdown, and HTML outputs for engineering handover;
-- committed fixtures for repeatable failure scenarios.
+## Interfaces
 
-## Failure classes
+### CLI
 
-| Scenario | Classification | Action |
+| Command | Purpose |
+| --- | --- |
+| `inspect` | Normalize an event and return its typed diagnosis. |
+| `replay` | Apply an allowed correction and run the local destination adapter. |
+| `report` | Render the diagnosis and replay decision as JSON, Markdown, or HTML. |
+
+```bash
+PYTHONPATH=src python -m automation_debugger.cli --help
+PYTHONPATH=src python -m automation_debugger.cli inspect examples/input/malformed-date.json
+PYTHONPATH=src python -m automation_debugger.cli replay examples/input/malformed-date.json
+```
+
+### API
+
+| Method | Path | Purpose |
 | --- | --- | --- |
-| Malformed date | `malformed_date` | Correct the deterministic field and replay locally. |
-| Missing required field | `missing_required_field` | Stop and write a dead-letter record. |
-| Duplicate event | `duplicate_event` | Refuse replay and retain the trace. |
-| Wrong destination | `destination_mismatch` | Block the target and require mapping review. |
-| Unknown event type | `unknown_event_type` | Stop until an explicit mapping exists. |
-| Invalid signature | `invalid_signature` | Refuse replay. |
-| Downstream error loop | `downstream_error_loop` | Stop repeated attempts locally. |
-| Rate limit | `rate_limit_backoff` | Return bounded retry guidance. |
-| Provider export | platform normalization | Convert Zapier, Make, and n8n shapes into the common event contract. |
+| `GET` | `/health` | Return service and safety configuration. |
+| `POST` | `/diagnose` | Classify one event. |
+| `POST` | `/replay` | Evaluate and run one allowed local replay. |
+| `POST` | `/report` | Return a client-readable operating report. |
 
-## Worked failure path
+```bash
+PYTHONPATH=src uvicorn automation_debugger.api:app --host 127.0.0.1 --port 8011
+curl -fsS http://127.0.0.1:8011/health
+```
 
-The committed `malformed-date` case shows the complete path:
+## System views
 
-1. Inspect a failed event and assign its trace ID.
-2. Classify the malformed date without changing the original input.
-3. Apply the deterministic correction.
-4. Re-evaluate idempotency and destination safety.
-5. Replay against the local adapter.
-6. Generate the diagnosis, replay record, and handover report.
+### System flow
 
-The duplicate case follows the same intake path but exits with a replay refusal. That distinction is deliberate: a technically valid payload can still be unsafe to repeat.
+[![Automation Debugger system flow](docs/screenshots/01-system-flow.png)](docs/screenshots/01-system-flow.png)
 
-## Screenshots
+### Interface surface
 
-[![Automation Debugger system flow](docs/screenshots/01-flow-overview.png)](docs/screenshots/01-flow-overview.png)
+[![CLI and API interfaces](docs/screenshots/02-interface-surface.png)](docs/screenshots/02-interface-surface.png)
 
-[![CLI diagnosis](docs/screenshots/02-cli-diagnosis.png)](docs/screenshots/02-cli-diagnosis.png)
+### Core processing
 
-[![Local API endpoints](docs/screenshots/03-openapi-endpoints.png)](docs/screenshots/03-openapi-endpoints.png)
+[![Typed diagnosis processing](docs/screenshots/03-core-processing.png)](docs/screenshots/03-core-processing.png)
 
-[![Duplicate replay refusal](docs/screenshots/07-duplicate-guard.png)](docs/screenshots/07-duplicate-guard.png)
+### Guardrail and failure path
 
-The images are generated from the committed local cases. They contain no provider account screens, customer data, credentials, browser tabs, or private desktop context.
+[![Replay guardrails](docs/screenshots/04-replay-guardrail.png)](docs/screenshots/04-replay-guardrail.png)
 
-<details>
-<summary>Additional implementation screens</summary>
+### Output and readback
 
-[![Structured diagnosis output](docs/screenshots/04-diagnosis-output.png)](docs/screenshots/04-diagnosis-output.png)
+[![Operating report and replay readback](docs/screenshots/05-operating-readback.png)](docs/screenshots/05-operating-readback.png)
 
-[![Corrected local replay](docs/screenshots/05-corrected-replay.png)](docs/screenshots/05-corrected-replay.png)
+### Validation and scope
 
-[![Generated handover report](docs/screenshots/06-fix-report.png)](docs/screenshots/06-fix-report.png)
+[![Validation results and operating boundary](docs/screenshots/06-validation-scope.png)](docs/screenshots/06-validation-scope.png)
 
-[![Test and quality checks](docs/screenshots/08-quality-gates.png)](docs/screenshots/08-quality-gates.png)
+The images are generated from committed local scenarios. They contain no provider account screens, customer records, credentials, browser chrome, or private desktop paths.
 
-</details>
+## Run locally
 
-## Run the worked example
-
-Python 3.11 or newer is recommended.
+Python 3.11 is the reference runtime.
 
 ```bash
 uv venv --python 3.11 .venv
@@ -109,129 +111,53 @@ source .venv/bin/activate
 uv pip install -e ".[dev]"
 ```
 
-Inspect, replay, and report:
+Generate a local report:
 
 ```bash
-PYTHONPATH=src python -m automation_debugger.cli inspect examples/input/malformed-date.json
-PYTHONPATH=src python -m automation_debugger.cli replay examples/input/malformed-date.json
 PYTHONPATH=src python -m automation_debugger.cli report \
   examples/input/malformed-date.json \
   --format html \
-  --output examples/output/fix-report.html
+  --output /tmp/automation-debugger-report.html
 ```
-
-Check every committed input and expected output:
-
-```bash
-python scripts/verify_examples.py
-```
-
-## CLI
-
-```bash
-PYTHONPATH=src python -m automation_debugger.cli --help
-```
-
-Core commands:
-
-| Command | Purpose |
-| --- | --- |
-| `inspect` | Normalize an event and return a deterministic diagnosis. |
-| `replay` | Apply an allowed correction and run the local destination adapter. |
-| `report` | Render the diagnosis and replay decision as JSON, Markdown, or HTML. |
-
-## API
-
-Start the local service:
-
-```bash
-PYTHONPATH=src uvicorn automation_debugger.api:app --host 127.0.0.1 --port 8011
-curl -fsS http://127.0.0.1:8011/health
-```
-
-| Endpoint | Purpose |
-| --- | --- |
-| `GET /health` | Report local service and safety configuration. |
-| `POST /diagnose` | Classify an event and return its traceable diagnosis. |
-| `POST /replay` | Apply the same correction and refusal rules used by the CLI. |
-| `POST /report` | Generate JSON, Markdown, or HTML report content. |
-
-Request and response examples live in [`examples/api-responses/`](examples/api-responses/). Additional API notes are in [`docs/api.md`](docs/api.md).
-
-## Outputs
-
-Every run can produce:
-
-- normalized event data;
-- a failure classification and severity;
-- the affected fields and root cause;
-- a proposed correction when one is deterministic;
-- a replay success or refusal record;
-- destination-operation accounting;
-- a local dead-letter record when processing must stop;
-- a readable engineering handover.
-
-This makes the next decision inspectable without requiring another engineer to reconstruct the original run.
-
-## Architecture
-
-```text
-src/automation_debugger/
-├── platform_parsers.py  # Zapier, Make, n8n, and webhook normalization
-├── diagnosis.py         # deterministic classification
-├── correction.py        # bounded field correction
-├── idempotency.py       # replay refusal and duplicate checks
-├── replay.py            # local destination adapters
-├── dead_letter.py       # stopped-event records
-├── reports.py           # JSON, Markdown, and HTML output
-├── cli.py               # Typer interface
-└── api.py               # FastAPI interface
-```
-
-Configuration under [`configs/diagnosis-rules/`](configs/diagnosis-rules/) keeps the failure taxonomy and platform normalization mappings separate from the execution code.
-
-## Engineering decisions
-
-### Deterministic classification
-
-The same input and configuration produce the same failure class and recommended action. Replay safety does not depend on an opaque model score.
-
-### Refusal is a valid result
-
-Duplicate, invalid-signature, and already-applied events produce a structured refusal. The tool does not treat an attempted write as the definition of success.
-
-### Input remains immutable
-
-The original event is retained. Corrections are written as a separate candidate payload so the change can be reviewed and compared.
-
-### Destination operations are counted
-
-A replay record reports the destination operations it would produce. Refused cases assert zero operations, which makes duplicate protection testable.
 
 ## Validation
 
+The repository includes repeatable fixtures for malformed data, missing fields, duplicate events, destination mismatch, unknown event types, invalid signatures, downstream error loops, and rate limiting.
+
 ```bash
-PYTHONPATH=src python -m pytest -q
+python -m pytest -q
 python -m ruff check .
 python -m mypy src
 python scripts/verify_examples.py
-PYTHONPATH=src python scripts/capture_screenshots.py
-git diff --check
 ```
 
-The current suite covers normalization, classification, correction, replay, refusal, reporting, API behavior, committed examples, and screenshot generation.
+## Scope boundaries
 
-## Operating boundary
+- Synthetic fixtures and local mock destinations only.
+- No provider credentials or customer records.
+- No live webhook delivery or downstream API calls.
+- No production retry execution.
+- Live connections require scoped credentials, sanitized samples, durable storage, monitoring, and explicit operator approval.
 
-The included examples use synthetic local data and local destination adapters. The project does not sign in to Zapier, Make, n8n, Airtable, a CRM, or another provider. It does not modify production workflows or replay customer events.
+Every diagnosis and replay response declares:
 
-That boundary keeps the repository reproducible. A real incident response would add an approved provider adapter, scoped credentials, a sanitized event, and a separate live-change review.
+```text
+fixture_safe=true
+live_services_used=false
+synthetic_data_only=true
+```
 
-## Related repositories
+## Project documentation
 
-- [API Webhook Bridge](https://github.com/stefan-mcf/api-webhook-bridge) covers validated intake, mapping, idempotency, and dead-letter handling on the green path.
-- [Sheets Airtable Sync](https://github.com/stefan-mcf/sheets-airtable-sync) covers reconciliation, data quality, and exception routing after intake.
+| Document | Purpose |
+| --- | --- |
+| [Case study](docs/case-study.md) | Engineering decisions, representative paths, and production extension. |
+| [Architecture](docs/architecture.md) | Component boundaries and data flow. |
+| [API reference](docs/api.md) | Local endpoints and request contracts. |
+| [Local operation](docs/local-operation.md) | Repeatable CLI, API, and report commands. |
+| [Validation record](docs/validation.md) | Commands, fixtures, and checked boundaries. |
+| [Image index](docs/screenshots/README.md) | Functional image sequence and generation command. |
 
 ## License
 
-MIT License. See [`LICENSE`](LICENSE).
+MIT. See [LICENSE](LICENSE).

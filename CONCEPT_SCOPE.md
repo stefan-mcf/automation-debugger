@@ -1,4 +1,4 @@
-# Automation Debugger — Concept and Scope
+# Automation Debugger: Concept and Scope
 
 Automation Debugger is a workflow diagnosis project for urgent automation repair and debugging work. A broken event can be diagnosed, safely corrected when deterministic, replayed locally when safe, refused when unsafe, and packaged into a clean engineering report.
 
@@ -19,7 +19,7 @@ Zapier, Make, n8n, webhooks, API bridge handoffs, CRM lead routing, field mappin
 - Duplicate event -> idempotency guard refusal.
 - Destination mismatch -> deterministic local reroute to mock CRM.
 - Invalid signature -> webhook-auth refusal.
-- Downstream 500 loop -> local dead-letter evidence.
+- Downstream 500 loop -> local dead-letter record.
 
 ## Applied use
 

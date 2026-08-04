@@ -21,7 +21,7 @@
   ],
   "diagnosis_summary": "Payload date format is malformed for the destination mapping.",
   "event_id": "evt-date-001",
-  "evidence": [
+  "observations": [
     {
       "fields": [],
       "message": "Date field required normalization.",

@@ -6,7 +6,7 @@ Automation Debugger is the repair/diagnosis companion case study to Automation K
 
 1. Input fixtures and platform exports: generic webhooks plus synthetic Zapier task history, Make incomplete-execution, n8n execution, and api-webhook-bridge-style dead-letter handoff payloads.
 2. Diagnosis/correction/replay engine: typed Pydantic models, taxonomy-driven failure classes, deterministic correction helpers, idempotency guard, webhook safety checks, and local dead-letter records.
-3. Evidence/report/control surfaces: CLI, local FastAPI API, JSON examples, Markdown/HTML reports, screenshot evidence, and quality gates.
+3. Report and control surfaces: CLI, local FastAPI API, JSON examples, Markdown and HTML reports, generated images, and quality gates.
 
 ## Safety boundary
 

@@ -6,7 +6,7 @@ import hashlib
 from typing import Any
 
 from automation_debugger.correction import suggest_corrections
-from automation_debugger.models import DiagnosisResult, EventEvidence, FailureClass, Severity
+from automation_debugger.models import DiagnosisResult, DiagnosticObservation, FailureClass, Severity
 from automation_debugger.platform_parsers import load_payload, normalize_platform_payload
 from automation_debugger.webhook_safety import should_backoff, should_open_circuit
 
@@ -28,7 +28,7 @@ def diagnose_payload(source: str | dict[str, Any]) -> DiagnosisResult:
     failure_reason = str(payload.get("failure_reason") or "").lower()
     event_type = str(payload.get("type") or payload.get("event_type") or "")
     broken_fields: list[str] = list(dict.fromkeys(correction_fields))
-    evidence: list[EventEvidence] = []
+    observations: list[DiagnosticObservation] = []
 
     def result(
         failure_class: FailureClass,
@@ -54,12 +54,12 @@ def diagnose_payload(source: str | dict[str, Any]) -> DiagnosisResult:
             correction_suggestions=suggestions,
             corrected_payload=corrected,
             handoff_notes=notes,
-            evidence=evidence,
+            observations=observations,
         )
 
     if payload.get("signature_valid") is False or "signature" in failure_reason:
         broken_fields.append("signature")
-        evidence.append(EventEvidence(step="webhook_auth", message="Invalid fixture HMAC signature."))
+        observations.append(DiagnosticObservation(step="webhook_auth", message="Invalid fixture HMAC signature."))
         return result(
             FailureClass.INVALID_WEBHOOK_SIGNATURE,
             Severity.HIGH,
@@ -71,7 +71,7 @@ def diagnose_payload(source: str | dict[str, Any]) -> DiagnosisResult:
         )
     if event_id.startswith("duplicate") or payload.get("duplicate") is True:
         broken_fields.append("event_id")
-        evidence.append(EventEvidence(step="dedupe_guard", message="Duplicate idempotency key detected."))
+        observations.append(DiagnosticObservation(step="dedupe_guard", message="Duplicate idempotency key detected."))
         return result(
             FailureClass.DUPLICATE_EVENT,
             Severity.MEDIUM,
@@ -83,7 +83,7 @@ def diagnose_payload(source: str | dict[str, Any]) -> DiagnosisResult:
         )
     if not payload.get("email") and event_type in {"lead.created", "contact.created", ""}:
         broken_fields.append("email")
-        evidence.append(EventEvidence(step="field_mapping", message="Required email field is missing."))
+        observations.append(DiagnosticObservation(step="field_mapping", message="Required email field is missing."))
         return result(
             FailureClass.MISSING_REQUIRED_FIELD,
             Severity.HIGH,
@@ -94,7 +94,7 @@ def diagnose_payload(source: str | dict[str, Any]) -> DiagnosisResult:
             "Request a corrected sample payload before retrying.",
         )
     if should_open_circuit(payload) or "500" in failure_reason or "timeout" in failure_reason:
-        evidence.append(EventEvidence(step="downstream_call", message="Retry loop would keep hitting 5xx/timeout."))
+        observations.append(DiagnosticObservation(step="downstream_call", message="Retry loop would keep hitting 5xx/timeout."))
         return result(
             FailureClass.DOWNSTREAM_500_LOOP,
             Severity.HIGH,
@@ -105,7 +105,7 @@ def diagnose_payload(source: str | dict[str, Any]) -> DiagnosisResult:
             "Store a local dead-letter record and wait for destination recovery.",
         )
     if should_backoff(payload):
-        evidence.append(EventEvidence(step="retry_policy", message="Rate limit/backoff condition detected."))
+        observations.append(DiagnosticObservation(step="retry_policy", message="Rate limit/backoff condition detected."))
         return result(
             FailureClass.RATE_LIMIT_BACKOFF_NEEDED,
             Severity.MEDIUM,
@@ -116,7 +116,7 @@ def diagnose_payload(source: str | dict[str, Any]) -> DiagnosisResult:
             "Apply backoff policy before approved replay.",
         )
     if "destination" in broken_fields:
-        evidence.append(EventEvidence(step="routing", message="Destination mismatch corrected locally."))
+        observations.append(DiagnosticObservation(step="routing", message="Destination mismatch corrected locally."))
         return result(
             FailureClass.DESTINATION_MISMATCH,
             Severity.MEDIUM,
@@ -127,7 +127,7 @@ def diagnose_payload(source: str | dict[str, Any]) -> DiagnosisResult:
             "Update destination mapping and replay one approved synthetic sample.",
         )
     if "created_at" in broken_fields or "event_date" in broken_fields:
-        evidence.append(EventEvidence(step="formatter", message="Date field required normalization."))
+        observations.append(DiagnosticObservation(step="formatter", message="Date field required normalization."))
         return result(
             FailureClass.MALFORMED_DATE,
             Severity.MEDIUM,
@@ -138,7 +138,7 @@ def diagnose_payload(source: str | dict[str, Any]) -> DiagnosisResult:
             "Normalize date formatting before one local mock replay.",
         )
     if event_type and event_type not in {"lead.created", "contact.created", "order.created"}:
-        evidence.append(EventEvidence(step="event_router", message=f"Unknown event type: {event_type}"))
+        observations.append(DiagnosticObservation(step="event_router", message=f"Unknown event type: {event_type}"))
         return result(
             FailureClass.UNKNOWN_EVENT_TYPE,
             Severity.MEDIUM,
@@ -148,7 +148,7 @@ def diagnose_payload(source: str | dict[str, Any]) -> DiagnosisResult:
             True,
             "Add an approved routing branch before retrying.",
         )
-    evidence.append(EventEvidence(step="local_replay", message="Payload is normalized and safe locally."))
+    observations.append(DiagnosticObservation(step="local_replay", message="Payload is normalized and safe locally."))
     return result(
         FailureClass.OK,
         Severity.LOW,

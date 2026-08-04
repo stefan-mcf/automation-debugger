@@ -32,7 +32,7 @@
   },
   "replay_result": null,
   "handoff_notes": "Do not replay until idempotency state is checked.",
-  "evidence": [
+  "observations": [
     {
       "step": "dedupe_guard",
       "message": "Duplicate idempotency key detected.",

@@ -32,7 +32,7 @@
   },
   "replay_result": null,
   "handoff_notes": "Store a local dead-letter record and wait for destination recovery.",
-  "evidence": [
+  "observations": [
     {
       "step": "downstream_call",
       "message": "Retry loop would keep hitting 5xx/timeout.",

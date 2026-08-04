@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
+import tempfile
 import textwrap
 from pathlib import Path
+from typing import Any
 
 from PIL import Image, ImageDraw, ImageFont, ImageStat, PngImagePlugin
 
@@ -13,19 +16,26 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "docs" / "screenshots"
 OUT.mkdir(parents=True, exist_ok=True)
 
-WIDTH = 1280
-HEIGHT = 760
-BG = (10, 15, 28)
+WIDTH = 1400
+HEIGHT = 800
+BG = (11, 17, 32)
 PANEL = (17, 24, 39)
-PANEL_2 = (25, 35, 56)
-TEXT = (226, 232, 240)
+PANEL_2 = (24, 34, 53)
+TEXT = (229, 231, 235)
 MUTED = (148, 163, 184)
-GREEN = (74, 222, 128)
 BLUE = (96, 165, 250)
-YELLOW = (250, 204, 21)
-PINK = (244, 114, 182)
+GREEN = (74, 222, 128)
 RED = (248, 113, 113)
 BORDER = (51, 65, 85)
+
+HEADER_BOX = (32, 28, 1368, 122)
+FOOTER_BOX = (32, 730, 1368, 772)
+TWO_COLUMN_BOXES = ((52, 154, 674, 670), (726, 154, 1348, 670))
+THREE_COLUMN_BOXES = (
+    (52, 154, 446, 670),
+    (503, 154, 897, 670),
+    (954, 154, 1348, 670),
+)
 
 
 def font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
@@ -33,8 +43,12 @@ def font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont | ImageFont.Im
         "/System/Library/Fonts/Menlo.ttc",
         "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
         "/Library/Fonts/Arial Unicode.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf" if bold else "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
-        "/usr/share/fonts/truetype/liberation2/LiberationMono-Bold.ttf" if bold else "/usr/share/fonts/truetype/liberation2/LiberationMono-Regular.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf"
+        if bold
+        else "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
+        "/usr/share/fonts/truetype/liberation2/LiberationMono-Bold.ttf"
+        if bold
+        else "/usr/share/fonts/truetype/liberation2/LiberationMono-Regular.ttf",
     ]
     for candidate in candidates:
         try:
@@ -46,20 +60,37 @@ def font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont | ImageFont.Im
 
 TITLE_FONT = font(34, bold=True)
 SUBTITLE_FONT = font(18)
-BODY_FONT = font(20)
-SMALL_FONT = font(16)
-MONO_FONT = font(18)
-MONO_SMALL = font(15)
+PANEL_TITLE_FONT = font(18, bold=True)
+BODY_FONT = font(16)
+MONO_FONT = font(15)
 
 
-def run(cmd: list[str], *, max_lines: int = 14) -> list[str]:
-    env = {**os.environ, "PYTHONPATH": "src"}
+def run(cmd: list[str], *, max_lines: int = 18) -> list[str]:
+    env = {**os.environ, "PYTHONPATH": "src", "PYTHONWARNINGS": "ignore"}
     proc = subprocess.run(cmd, cwd=ROOT, text=True, capture_output=True, check=True, env=env)
     combined = (proc.stdout + proc.stderr).strip().splitlines()
-    return combined[:max_lines] or ["command completed with no output"]
+    return combined[:max_lines] or ["command completed"]
 
 
-def load_json(path: str) -> dict[str, object]:
+def passed_count(lines: list[str]) -> int:
+    summary = next((line for line in reversed(lines) if " passed" in line), "")
+    match = re.search(r"(?P<passed>\d+) passed", summary)
+    if not match:
+        raise RuntimeError(f"unable to read pytest result from: {lines!r}")
+    return int(match.group("passed"))
+
+
+def validation_summary(core_lines: list[str], image_lines: list[str]) -> list[str]:
+    core = passed_count(core_lines)
+    image_checks = passed_count(image_lines)
+    return [
+        f"core checks: {core} passed",
+        f"image checks: {image_checks} passed",
+        f"full suite: {core + image_checks} passed",
+    ]
+
+
+def load_json(path: str) -> dict[str, Any]:
     return json.loads((ROOT / path).read_text())
 
 
@@ -69,67 +100,86 @@ def wrap_lines(lines: list[str], width: int) -> list[str]:
         if not line:
             wrapped.append("")
             continue
-        wrapped.extend(textwrap.wrap(line, width=width, replace_whitespace=False, drop_whitespace=False) or [line])
+        wrapped.extend(
+            textwrap.wrap(line, width=width, replace_whitespace=False, drop_whitespace=False)
+            or [line]
+        )
     return wrapped
 
 
-def draw_panel(draw: ImageDraw.ImageDraw, box: tuple[int, int, int, int], title: str, lines: list[str], *, accent: tuple[int, int, int] = BLUE, code: bool = False) -> None:
+def draw_panel(
+    draw: ImageDraw.ImageDraw,
+    box: tuple[int, int, int, int],
+    title: str,
+    lines: list[str],
+    *,
+    accent: tuple[int, int, int] = BLUE,
+    code: bool = False,
+) -> None:
     x1, y1, x2, y2 = box
-    draw.rounded_rectangle(box, radius=22, fill=PANEL, outline=BORDER, width=2)
-    draw.rectangle((x1, y1, x1 + 8, y2), fill=accent)
-    draw.text((x1 + 26, y1 + 20), title, font=SUBTITLE_FONT, fill=accent)
-    y = y1 + 58
-    selected_font = MONO_SMALL if code else SMALL_FONT
-    usable_width = max(220, x2 - x1 - 70)
-    approx_char_px = 9 if code else 10
-    max_chars = max(34, usable_width // approx_char_px)
+    draw.rounded_rectangle(box, radius=20, fill=PANEL, outline=BORDER, width=2)
+    draw.rectangle((x1, y1, x1 + 6, y2), fill=accent)
+    draw.text((x1 + 26, y1 + 20), title, font=PANEL_TITLE_FONT, fill=TEXT)
+    y = y1 + 62
+    selected_font = MONO_FONT if code else BODY_FONT
+    max_chars = max(34, (x2 - x1 - 66) // (9 if code else 10))
     for line in wrap_lines(lines, max_chars)[:18]:
         fill = TEXT
-        if line.startswith(("PASS", "✓", "fixture_safe=true", "live_services_used=false", "synthetic_data_only=true")):
+        lowered = line.lower()
+        if line.startswith(("PASS", "OK", "fixture_safe=true")) or "passed" in lowered:
             fill = GREEN
-        elif line.startswith(("REFUSE", "unsafe", "blocked")) or "FAILED" in line:
+        elif line.startswith(("REFUSE", "BLOCK", "DENY")) or "failed" in lowered:
             fill = RED
         elif line.startswith(("$", "python", "PYTHONPATH")):
-            fill = YELLOW
+            fill = BLUE
         draw.text((x1 + 26, y), line, font=selected_font, fill=fill)
-        y += 24 if code else 26
-        if y > y2 - 34:
+        y += 24 if code else 28
+        if y > y2 - 32:
             break
 
 
-def render(path: Path, title: str, subtitle: str, panels: list[dict[str, object]], footer: str = "fixture_safe=true  live_services_used=false  synthetic_data_only=true") -> None:
+def render(
+    path: Path,
+    title: str,
+    subtitle: str,
+    panels: list[dict[str, Any]],
+    footer: str = "Local inputs | No provider writes | Synthetic records",
+) -> None:
     image = Image.new("RGB", (WIDTH, HEIGHT), BG)
     draw = ImageDraw.Draw(image)
 
-    # subtle grid
-    for x in range(0, WIDTH, 80):
+    for x in range(0, WIDTH, 100):
         draw.line((x, 0, x, HEIGHT), fill=(15, 23, 42))
-    for y in range(0, HEIGHT, 80):
+    for y in range(0, HEIGHT, 100):
         draw.line((0, y, WIDTH, y), fill=(15, 23, 42))
 
-    draw.rounded_rectangle((30, 28, WIDTH - 30, 116), radius=24, fill=PANEL_2, outline=BORDER, width=2)
-    draw.text((58, 48), title, font=TITLE_FONT, fill=TEXT)
-    draw.text((60, 90), subtitle, font=SUBTITLE_FONT, fill=MUTED)
+    draw.rounded_rectangle(HEADER_BOX, radius=24, fill=PANEL_2, outline=BORDER, width=2)
+    draw.text((60, 50), title, font=TITLE_FONT, fill=TEXT)
+    draw.text((60, 94), subtitle, font=SUBTITLE_FONT, fill=MUTED)
+
     for panel in panels:
         draw_panel(
             draw,
-            panel["box"],  # type: ignore[arg-type]
+            panel["box"],
             str(panel["title"]),
-            list(panel["lines"]),  # type: ignore[arg-type]
-            accent=panel.get("accent", BLUE),  # type: ignore[arg-type]
+            list(panel["lines"]),
+            accent=panel.get("accent", BLUE),
             code=bool(panel.get("code", False)),
         )
 
-    draw.rounded_rectangle((30, HEIGHT - 54, WIDTH - 30, HEIGHT - 18), radius=16, fill=PANEL_2, outline=BORDER, width=1)
-    draw.text((54, HEIGHT - 45), footer, font=SMALL_FONT, fill=GREEN)
+    draw.rounded_rectangle(FOOTER_BOX, radius=16, fill=PANEL_2, outline=BORDER, width=1)
+    draw.text((56, 742), footer, font=BODY_FONT, fill=MUTED)
 
     metadata = PngImagePlugin.PngInfo()
-    metadata.add_text("Automation-Debugger", f"{title}\n{subtitle}\n{footer}")
+    metadata.add_text("SM-Systems-Validation", f"{title}\n{subtitle}\n{footer}")
     image.save(path, pnginfo=metadata, optimize=True)
 
     stat = ImageStat.Stat(image)
     if path.stat().st_size < 25_000 or max(stat.stddev) < 20:
-        raise RuntimeError(f"screenshot may be unreadable/blank: {path} size={path.stat().st_size} stddev={stat.stddev}")
+        raise RuntimeError(
+            f"image may be unreadable or blank: {path} "
+            f"size={path.stat().st_size} stddev={stat.stddev}"
+        )
 
 
 def main() -> None:
@@ -138,170 +188,230 @@ def main() -> None:
     mismatch = load_json("examples/input/destination-mismatch.json")
     duplicate = load_json("examples/input/duplicate-event.json")
 
-    cli_malformed = run([py, "-m", "automation_debugger.cli", "inspect", "examples/input/malformed-date.json"], max_lines=18)
-    cli_mismatch = run([py, "-m", "automation_debugger.cli", "inspect", "examples/input/destination-mismatch.json"], max_lines=18)
-    replay_ok = run([py, "-m", "automation_debugger.cli", "replay", "examples/input/malformed-date.json"], max_lines=18)
-    replay_dup = run([py, "-m", "automation_debugger.cli", "replay", "examples/input/duplicate-event.json"], max_lines=18)
-    pytest_lines = run([py, "-m", "pytest", "-q", "tests", "-k", "not screenshots"], max_lines=10)
-    run([py, "-m", "automation_debugger.cli", "report", "examples/input/malformed-date.json", "--format", "html", "--output", "examples/output/fix-report.html"], max_lines=5)
-    report_size = (ROOT / "examples/output/fix-report.html").stat().st_size
+    cli_malformed = run(
+        [py, "-m", "automation_debugger.cli", "inspect", "examples/input/malformed-date.json"]
+    )
+    cli_mismatch = run(
+        [py, "-m", "automation_debugger.cli", "inspect", "examples/input/destination-mismatch.json"]
+    )
+    replay_ok = run(
+        [py, "-m", "automation_debugger.cli", "replay", "examples/input/malformed-date.json"]
+    )
+    replay_duplicate = run(
+        [py, "-m", "automation_debugger.cli", "replay", "examples/input/duplicate-event.json"]
+    )
+    core_test_lines = run(
+        [py, "-m", "pytest", "-q", "-p", "no:warnings", "tests", "-k", "not screenshots"],
+        max_lines=30,
+    )
+    image_test_lines = run(
+        [py, "-m", "pytest", "-q", "-p", "no:warnings", "tests/test_screenshots.py"],
+        max_lines=30,
+    )
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        report_path = Path(temp_dir) / "operating-report.html"
+        run(
+            [
+                py,
+                "-m",
+                "automation_debugger.cli",
+                "report",
+                "examples/input/malformed-date.json",
+                "--format",
+                "html",
+                "--output",
+                str(report_path),
+            ]
+        )
+        report_size = report_path.stat().st_size
 
     render(
-        OUT / "01-flow-overview.png",
-        "Automation Debugger Flow",
-        "Failed workflow evidence becomes diagnosis, safe correction, replay decision, and client-readable report.",
+        OUT / "01-system-flow.png",
+        "Automation Debugger System Flow",
+        "Normalize failed events, decide replay safety, and return an operator-ready result.",
         [
             {
-                "box": (52, 148, 410, 628),
-                "title": "Inputs",
-                "accent": BLUE,
-                "lines": ["Zapier task export", "Make incomplete execution", "n8n execution failure", "Generic webhook payload", "API bridge dead-letter handoff"],
-            },
-            {
-                "box": (462, 148, 820, 628),
-                "title": "Diagnosis",
-                "accent": YELLOW,
-                "lines": ["stable trace_id", "failure_class taxonomy", "severity + safe action", "correction eligibility", "dead-letter reason"],
-            },
-            {
-                "box": (872, 148, 1230, 628),
-                "title": "Evidence",
-                "accent": GREEN,
-                "lines": ["JSON diagnosis files", "local replay logs", "Markdown/HTML fix report", "API response examples", "quality gate results"],
-            },
-        ],
-    )
-    render(
-        OUT / "02-cli-diagnosis.png",
-        "CLI Diagnosis",
-        "`automation-debugger inspect` classifies a malformed date fixture and returns safety fields.",
-        [
-            {
-                "box": (52, 148, 604, 628),
-                "title": "Command",
-                "accent": YELLOW,
-                "code": True,
+                "box": THREE_COLUMN_BOXES[0],
+                "title": "Ingest",
                 "lines": [
-                    "$ PYTHONPATH=src python -m automation_debugger.cli inspect examples/input/malformed-date.json",
-                    "",
-                    f"event_id={malformed.get('event_id')}",
-                    "expected class: malformed_date",
+                    "Zapier task export",
+                    "Make execution result",
+                    "n8n failure record",
+                    "Webhook payload",
+                    "Dead-letter handoff",
                 ],
             },
-            {"box": (650, 148, 1230, 628), "title": "Output excerpt", "accent": GREEN, "code": True, "lines": cli_malformed},
-        ],
-    )
-    render(
-        OUT / "03-openapi-endpoints.png",
-        "Local API Surface",
-        "FastAPI endpoints expose fixture-safe diagnosis, replay, and report generation without live credentials.",
-        [
             {
-                "box": (52, 148, 604, 628),
-                "title": "Endpoints",
-                "accent": BLUE,
-                "lines": ["GET /health", "POST /diagnose", "POST /replay", "POST /report", "OpenAPI docs available when uvicorn runs locally"],
+                "box": THREE_COLUMN_BOXES[1],
+                "title": "Diagnose",
+                "lines": [
+                    "normalize provider shape",
+                    "assign stable trace ID",
+                    "classify failure",
+                    "evaluate correction",
+                    "check replay risk",
+                ],
             },
             {
-                "box": (650, 148, 1230, 628),
-                "title": "Health contract",
+                "box": THREE_COLUMN_BOXES[2],
+                "title": "Control",
+                "lines": [
+                    "run local replay",
+                    "refuse unsafe retry",
+                    "write dead-letter record",
+                    "return structured readback",
+                    "prepare operating report",
+                ],
+            },
+        ],
+    )
+
+    render(
+        OUT / "02-interface-surface.png",
+        "CLI and API Interfaces",
+        "The same typed contracts are available to operators and integration callers.",
+        [
+            {
+                "box": TWO_COLUMN_BOXES[0],
+                "title": "Operator commands",
+                "code": True,
+                "lines": [
+                    "$ automation-debugger inspect <fixture>",
+                    "$ automation-debugger replay <fixture>",
+                    "$ automation-debugger report <fixture>",
+                    "",
+                    "GET  /health",
+                    "POST /diagnose",
+                    "POST /replay",
+                    "POST /report",
+                ],
+            },
+            {
+                "box": TWO_COLUMN_BOXES[1],
+                "title": "CLI readback",
                 "accent": GREEN,
                 "code": True,
-                "lines": ['{"status":"ok"}', '"fixture_safe": true', '"live_services_used": false', '"synthetic_data_only": true'],
+                "lines": cli_malformed,
             },
         ],
     )
+
     render(
-        OUT / "04-diagnosis-output.png",
-        "Diagnosis JSON",
-        "Destination mismatch is detected before any unsafe replay is attempted.",
+        OUT / "03-core-processing.png",
+        "Typed Failure Processing",
+        "Destination mismatch is identified before any destination operation is prepared.",
         [
             {
-                "box": (52, 148, 604, 628),
-                "title": "Fixture",
-                "accent": PINK,
+                "box": TWO_COLUMN_BOXES[0],
+                "title": "Controlled scenario",
                 "code": True,
                 "lines": [
                     f"event_id={mismatch.get('event_id')}",
-                    f"source={mismatch.get('source_system')}",
-                    f"destination={mismatch.get('destination_system')}",
-                    "failure: destination_mismatch",
+                    f"source={mismatch.get('platform')}",
+                    f"destination={mismatch.get('destination')}",
+                    "expected_class=destination_mismatch",
+                    "destination_operations=0",
                 ],
             },
-            {"box": (650, 148, 1230, 628), "title": "Output excerpt", "accent": GREEN, "code": True, "lines": cli_mismatch},
-        ],
-    )
-    render(
-        OUT / "05-corrected-replay.png",
-        "Corrected Replay",
-        "A safe malformed-date correction replays only against the local mock destination.",
-        [
             {
-                "box": (52, 148, 604, 628),
-                "title": "Replay boundary",
-                "accent": BLUE,
-                "lines": ["deterministic date correction", "local mock destination", "no live webhook call", "traceable replay result"],
-            },
-            {"box": (650, 148, 1230, 628), "title": "Output excerpt", "accent": GREEN, "code": True, "lines": replay_ok},
-        ],
-    )
-    render(
-        OUT / "06-fix-report.png",
-        "Generated Fix Report",
-        "HTML report is generated locally from the same diagnosis/correction evidence used by CLI and API paths.",
-        [
-            {
-                "box": (52, 148, 604, 628),
-                "title": "Report artifact",
-                "accent": YELLOW,
-                "code": True,
-                "lines": ["examples/output/fix-report.html", f"bytes={report_size}", "source fixture=malformed-date.json", "format=html"],
-            },
-            {
-                "box": (650, 148, 1230, 628),
-                "title": "Report includes",
+                "box": TWO_COLUMN_BOXES[1],
+                "title": "Diagnosis readback",
                 "accent": GREEN,
-                "lines": ["failure summary", "root cause", "safe correction", "replay decision", "operator handoff notes"],
+                "code": True,
+                "lines": cli_mismatch,
             },
         ],
     )
+
     render(
-        OUT / "07-duplicate-guard.png",
-        "Duplicate Replay Guard",
-        "Duplicate/idempotency conflicts are refused and retained as local evidence instead of retried unsafely.",
+        OUT / "04-replay-guardrail.png",
+        "Replay Guardrails",
+        "Duplicate and unsafe events stop before a repeated downstream operation can occur.",
         [
             {
-                "box": (52, 148, 604, 628),
-                "title": "Fixture",
+                "box": TWO_COLUMN_BOXES[0],
+                "title": "Duplicate scenario",
                 "accent": RED,
                 "code": True,
-                "lines": [f"event_id={duplicate.get('event_id')}", "failure: duplicate_event", "safe action: refuse replay", "dead-letter evidence retained"],
-            },
-            {"box": (650, 148, 1230, 628), "title": "Output excerpt", "accent": GREEN, "code": True, "lines": replay_dup},
-        ],
-    )
-    render(
-        OUT / "08-quality-gates.png",
-        "Quality Gate Results",
-        "The evidence package is regenerated only after local tests and example verification pass.",
-        [
-            {
-                "box": (52, 148, 604, 628),
-                "title": "Verified commands",
-                "accent": BLUE,
-                "code": True,
                 "lines": [
-                    "PYTHONPATH=src python -m pytest -q",
-                    "python -m ruff check .",
-                    "python -m mypy src",
-                    "python scripts/verify_examples.py",
-                    "python scripts/capture_screenshots.py",
+                    f"event_id={duplicate.get('event_id')}",
+                    "failure_class=duplicate_event",
+                    "safe_action=refuse_replay",
+                    "destination_operations=0",
                 ],
             },
-            {"box": (650, 148, 1230, 628), "title": "Pytest excerpt", "accent": GREEN, "code": True, "lines": pytest_lines},
+            {
+                "box": TWO_COLUMN_BOXES[1],
+                "title": "Guardrail readback",
+                "accent": RED,
+                "code": True,
+                "lines": replay_duplicate,
+            },
         ],
     )
-    print("screenshots rendered")
+
+    render(
+        OUT / "05-operating-readback.png",
+        "Operating Readback",
+        "Allowed corrections produce a local replay result and a client-readable operating report.",
+        [
+            {
+                "box": TWO_COLUMN_BOXES[0],
+                "title": "Corrected local replay",
+                "accent": GREEN,
+                "code": True,
+                "lines": replay_ok,
+            },
+            {
+                "box": TWO_COLUMN_BOXES[1],
+                "title": "Generated report",
+                "lines": [
+                    "format: HTML, Markdown, or JSON",
+                    f"generated bytes: {report_size}",
+                    f"source event: {malformed.get('event_id')}",
+                    "includes root cause and safe action",
+                    "includes replay decision",
+                    "includes live-service boundary",
+                ],
+            },
+        ],
+    )
+
+    render(
+        OUT / "06-validation-scope.png",
+        "Validation and Scope",
+        "Local checks cover typed contracts, failure paths, reports, examples, and image integrity.",
+        [
+            {
+                "box": TWO_COLUMN_BOXES[0],
+                "title": "Validation commands",
+                "code": True,
+                "lines": [
+                    "$ python -m pytest -q",
+                    "$ python -m ruff check .",
+                    "$ python -m mypy src",
+                    "$ python scripts/verify_examples.py",
+                    "$ python scripts/capture_screenshots.py",
+                ],
+            },
+            {
+                "box": TWO_COLUMN_BOXES[1],
+                "title": "Current result",
+                "accent": GREEN,
+                "lines": [
+                    *validation_summary(core_test_lines, image_test_lines),
+                    "fixtures: synthetic",
+                    "destination: local mock",
+                    "provider credentials: none",
+                    "customer records: none",
+                    "live retry execution: excluded",
+                ],
+            },
+        ],
+    )
+
+    print("six portfolio images rendered")
 
 
 if __name__ == "__main__":
