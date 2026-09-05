@@ -6,6 +6,8 @@ Diagnose failed Zapier, Make, n8n, webhook, and API workflows before a retry cre
 
 ## Overview
 
+**Role:** failure taxonomy, diagnosis and replay controls, CLI/API implementation and tests. **Status:** an SM Systems reference tool with deterministic local scenarios and mock destinations.
+
 Automation Debugger separates diagnosis from replay. It normalizes provider-shaped input, assigns a stable trace ID, classifies the failure, proposes deterministic corrections, and decides whether a local replay is safe.
 
 Duplicate events, invalid signatures, missing required fields, unknown event types, and repeated downstream errors stop with structured operator guidance. Safe corrections run only against the local mock destination.
