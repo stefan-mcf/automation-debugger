@@ -1,20 +1,18 @@
 {
   "name": "automation-debugger",
   "title": "Automation Debugger",
-  "description": "Broken automation diagnosis, correction, replay control, and fix-report generation for Zapier, Make, n8n, webhook, and API bridge failure scenarios.",
+  "description": "Deterministic workflow diagnosis, controlled local replay and structured incident reports through CLI/API.",
   "private": false,
   "fixture_safe": true,
   "live_services_used": false,
   "synthetic_data_only": true,
   "topics": [
-    "zapier",
-    "make",
-    "n8n",
-    "webhooks",
+    "python",
+    "fastapi",
     "workflow-automation",
-    "automation-debugging",
-    "automation-repair",
-    "fixture-safe"
+    "debugging",
+    "incident-response",
+    "cli"
   ],
   "automation_kit_relationship": "Concrete repair and debugging companion; Automation Kit remains the reusable local framework.",
   "api_webhook_bridge_relationship": "Sibling green-path integration spoke; this repo consumes failed/dead-letter-style fixture handoffs without importing bridge internals."
