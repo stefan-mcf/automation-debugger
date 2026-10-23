@@ -2,27 +2,21 @@
 
 Diagnose failed Zapier, Make, n8n, webhook, and API workflows before a retry creates duplicate or incorrect downstream work.
 
+**Status:** an SM Systems reference tool with deterministic local scenarios and mock destinations.
+
+**My contribution:** failure taxonomy, diagnosis and replay controls, CLI/API implementation and tests.
+
 [Case study](docs/case-study.md) | [Architecture](docs/architecture.md) | [API reference](docs/api.md)
 
-## Overview
+![Generated local processing example](docs/screenshots/03-core-processing.png)
 
-**Role:** failure taxonomy, diagnosis and replay controls, CLI/API implementation and tests. **Status:** an SM Systems reference tool with deterministic local scenarios and mock destinations.
+*Generated panel from synthetic local scenarios. Further views are in the [image index](docs/screenshots/README.md); recorded totals are separate from current CI.*
+
+## How it works
 
 Automation Debugger separates diagnosis from replay. It normalizes provider-shaped input, assigns a stable trace ID, classifies the failure, proposes deterministic corrections, and decides whether a local replay is safe.
 
 Duplicate events, invalid signatures, missing required fields, unknown event types, and repeated downstream errors stop with structured operator guidance. Safe corrections run only against the local mock destination.
-
-## Capabilities
-
-- Normalizes Zapier, Make, n8n, and generic webhook failure exports.
-- Classifies ten success and failure states through a typed taxonomy.
-- Applies deterministic field corrections without mutating the source fixture.
-- Blocks duplicate, invalid-signature, and unsafe retry paths.
-- Writes local dead-letter records for repeated downstream failures.
-- Produces JSON, Markdown, and HTML operating reports.
-- Exposes the same contracts through a Typer CLI and FastAPI service.
-
-## Operating flow
 
 ```text
 Provider export or webhook fixture
@@ -45,65 +39,7 @@ Provider export or webhook fixture
 
 The source fixture remains unchanged. A corrected payload is evaluated separately, and every replay result includes the trace ID, destination boundary, operation count, and safety fields.
 
-## Interfaces
-
-### CLI
-
-| Command | Purpose |
-| --- | --- |
-| `inspect` | Normalize an event and return its typed diagnosis. |
-| `replay` | Apply an allowed correction and run the local destination adapter. |
-| `report` | Render the diagnosis and replay decision as JSON, Markdown, or HTML. |
-
-```bash
-PYTHONPATH=src python -m automation_debugger.cli --help
-PYTHONPATH=src python -m automation_debugger.cli inspect examples/input/malformed-date.json
-PYTHONPATH=src python -m automation_debugger.cli replay examples/input/malformed-date.json
-```
-
-### API
-
-| Method | Path | Purpose |
-| --- | --- | --- |
-| `GET` | `/health` | Return service and safety configuration. |
-| `POST` | `/diagnose` | Classify one event. |
-| `POST` | `/replay` | Evaluate and run one allowed local replay. |
-| `POST` | `/report` | Return a client-readable operating report. |
-
-```bash
-PYTHONPATH=src uvicorn automation_debugger.api:app --host 127.0.0.1 --port 8011
-curl -fsS http://127.0.0.1:8011/health
-```
-
-## System views
-
-### System flow
-
-[![Automation Debugger system flow](docs/screenshots/01-system-flow.png)](docs/screenshots/01-system-flow.png)
-
-### Interface surface
-
-[![CLI and API interfaces](docs/screenshots/02-interface-surface.png)](docs/screenshots/02-interface-surface.png)
-
-### Core processing
-
-[![Typed diagnosis processing](docs/screenshots/03-core-processing.png)](docs/screenshots/03-core-processing.png)
-
-### Guardrail and failure path
-
-[![Replay guardrails](docs/screenshots/04-replay-guardrail.png)](docs/screenshots/04-replay-guardrail.png)
-
-### Output and readback
-
-[![Operating report and replay readback](docs/screenshots/05-operating-readback.png)](docs/screenshots/05-operating-readback.png)
-
-### Validation and scope
-
-[![Validation results and operating boundary](docs/screenshots/06-validation-scope.png)](docs/screenshots/06-validation-scope.png)
-
-The images are generated from committed local scenarios. They contain no provider account screens, customer records, credentials, browser chrome, or private desktop paths.
-
-## Run locally
+## Usage
 
 Python 3.11 is the reference runtime.
 
@@ -133,7 +69,7 @@ python -m mypy src
 python scripts/verify_examples.py
 ```
 
-## Scope boundaries
+## Scope and current state
 
 - Synthetic fixtures and local mock destinations only.
 - No provider credentials or customer records.
@@ -149,7 +85,7 @@ live_services_used=false
 synthetic_data_only=true
 ```
 
-## Project documentation
+## Documentation
 
 | Document | Purpose |
 | --- | --- |
@@ -159,7 +95,6 @@ synthetic_data_only=true
 | [Local operation](docs/local-operation.md) | Repeatable CLI, API, and report commands. |
 | [Validation record](docs/validation.md) | Commands, fixtures, and checked boundaries. |
 | [Image index](docs/screenshots/README.md) | Functional image sequence and generation command. |
-
-## License
+- [Image index](docs/screenshots/README.md)
 
 MIT. See [LICENSE](LICENSE).

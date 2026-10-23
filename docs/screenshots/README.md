@@ -10,11 +10,14 @@ They use a shared SM Systems technical-project layout with no browser chrome, ac
 
 | File | Function |
 | --- | --- |
-| `01-system-flow.png` | Intake, diagnosis, and replay-control architecture. |
-| `02-interface-surface.png` | CLI commands, API routes, and authentic CLI readback. |
-| `03-core-processing.png` | Typed destination-mismatch processing. |
-| `04-replay-guardrail.png` | Duplicate-event refusal and zero-operation result. |
-| `05-operating-readback.png` | Corrected local replay and generated operating report. |
-| `06-validation-scope.png` | Current checks and explicit local-only boundary. |
+| [System flow](01-system-flow.png) | Intake, diagnosis, and replay-control architecture. |
+| [Interface surface](02-interface-surface.png) | CLI commands, API routes, and local CLI readback. |
+| [Core processing](03-core-processing.png) | Typed destination-mismatch processing. |
+| [Replay guardrail](04-replay-guardrail.png) | Duplicate-event refusal and zero-operation result. |
+| [Operating readback](05-operating-readback.png) | Corrected local replay and generated operating report. |
+| [Validation and scope](06-validation-scope.png) | Recorded checks and explicit local-only boundary. |
 
 Each PNG is 1400x800 and includes machine-readable project metadata.
+
+These are generated local panels. Use current CI rather than historical panel
+totals for the latest validation result.
