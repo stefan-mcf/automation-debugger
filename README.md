@@ -95,6 +95,5 @@ synthetic_data_only=true
 | [Local operation](docs/local-operation.md) | Repeatable CLI, API, and report commands. |
 | [Validation record](docs/validation.md) | Commands, fixtures, and checked boundaries. |
 | [Image index](docs/screenshots/README.md) | Functional image sequence and generation command. |
-- [Image index](docs/screenshots/README.md)
 
 MIT. See [LICENSE](LICENSE).
