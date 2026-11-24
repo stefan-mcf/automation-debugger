@@ -8,9 +8,14 @@ Diagnose failed Zapier, Make, n8n, webhook, and API workflows before a retry cre
 
 [Case study](docs/case-study.md) | [Architecture](docs/architecture.md) | [API reference](docs/api.md)
 
-![Generated local processing example](docs/screenshots/03-core-processing.png)
+## When to correct a retry and when to refuse it
 
-*Generated panel from synthetic local scenarios. Further views are in the [image index](docs/screenshots/README.md); recorded totals are separate from current CI.*
+| Synthetic failure | Local result |
+| --- | --- |
+| [Malformed date](examples/input/malformed-date.json) | The [diagnosis](examples/output/diagnosis-malformed-date.json) proposes a correction. Its [replay receipt](examples/output/replay-success.json) records one mock operation. |
+| [Invalid webhook signature](examples/input/webhook-invalid-signature.json) | The [refusal receipt](examples/output/replay-refused.json) records zero operations. |
+
+The [local report command](#usage) reproduces the malformed-date case. See the [saved report example](examples/output/fix-report.md) for a separate run of that fixture.
 
 ## How it works
 
